@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="每日健康紀錄">
+<title>每日健康紀錄</title>
+
+<!-- iPhone 單檔版：已移除外部 Chart.js 網路依賴，圖表改為內建 Canvas 繪製，可離線使用 -->
+
+<style>
+:root {
+    --primary-yellow:#f5a623;
+    --primary-green:#00a65f;
+    --bg-color:#f5f6f8;
+    --card-bg:#ffffff;
+    --text-dark:#333333;
+    --text-light:#888888;
+    --border-color:#eeeeee;
+    --diet-bg:#fffcf5;
+}
+
+@media (prefers-color-scheme:dark) {
+    :root {
+        --bg-color:#121212;
+        --card-bg:#1e1e1e;
+        --text-dark:#ffffff;
+        --text-light:#aaaaaa;
+        --border-color:#333333;
+        --diet-bg:#2a2416;
+    }
+    .modal-content { background:var(--card-bg)!important; color:var(--text-dark); }
+    .input-control, .textarea-control, select.input-control { background:#121212!important; color:#fff!important; border-color:#444!important; }
+    .del-btn { background:#3a1a1a!important; color:#ff6b6b!important; }
+    .sport-option { background:#252525!important; border-color:#444!important; color:#fff!important; }
+    .chip { background:#1a3320!important; color:#81c784!important; border-color:#2e4d34!important; }
+    .cheat-list li { border-bottom-color:#444!important; }
+    
+    .status-remain { background: #332915 !important; color: #ffb74d !important; }
+    .status-exceed { background: #3a1616 !important; color: #ff5252 !important; } 
+    .status-zero { color: #777777 !important; }
+    #date-selector { color-scheme: dark; }
+}
+
+* { box-sizing:border-box; font-family:'PingFang TC','Microsoft JhengHei',sans-serif; margin:0; padding:0; }
+body { background:var(--bg-color); color:var(--text-dark); display:flex; justify-content:center; }
+.app-container { width:100%; max-width:480px; padding:16px; padding-bottom:80px; }
+
+.profile-header { background:var(--card-bg); border-radius:16px; padding:20px; margin-bottom:16px; display:flex; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+.avatar { width:60px; height:60px; background:#e0f2eb; color:var(--primary-green); border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight:bold; margin-right:15px; }
+.profile-info { flex:1; }
+.profile-name { font-size:18px; font-weight:bold; margin-bottom:4px; }
+.profile-date { font-size:12px; color:var(--text-light); display:flex; align-items:center; gap:5px; margin-top:5px; }
+
+#date-selector { border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px; background: var(--card-bg); color: var(--primary-green); font-weight: bold; font-family: inherit; font-size: 14px; outline: none; cursor: pointer; }
+
+.target-stats { display:flex; justify-content:space-between; text-align:center; margin-top:15px; border-top:1px solid var(--border-color); padding-top:15px; }
+.stat-item { flex:1; }
+.stat-label { font-size:12px; color:var(--text-light); margin-bottom:4px; }
+.stat-val { font-size:16px; font-weight:bold; }
+
+.card { background:var(--card-bg); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+.card-header { display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:16px; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:10px; }
+.card-header .view-record { font-size:14px; color:var(--primary-green); font-weight:normal; cursor:pointer; }
+.card-content-row { display:flex; justify-content:space-around; align-items:center; margin-bottom:15px; text-align:center; }
+.val-display { font-size:28px; font-weight:bold; }
+.val-unit { font-size:14px; color:var(--text-light); font-weight:normal; }
+
+.btn-fill { width:100%; padding:12px; background:var(--primary-yellow); color:white; border:none; border-radius:25px; font-size:16px; font-weight:bold; cursor:pointer; }
+.btn-fill:active { opacity:.8; }
+.btn-green { background:var(--primary-green); }
+.btn-outline { background:transparent; color:var(--text-light); border:1px solid var(--border-color); border-radius:8px; cursor:pointer; }
+
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:100; justify-content:center; align-items:center; padding:20px; }
+.modal-content { background:var(--card-bg); width:100%; max-width:420px; border-radius:16px; padding:20px; position:relative; animation:slideUp .3s ease-out; max-height:90vh; overflow-y:auto; }
+@keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-title { font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; }
+.close-btn { position:absolute; right:20px; top:20px; background:none; border:none; font-size:20px; color:var(--text-light); cursor:pointer; }
+.input-group { margin-bottom:15px; }
+.input-group label { display:block; font-size:14px; color:var(--text-light); margin-bottom:5px; }
+.input-control, .textarea-control { width:100%; padding:10px; border:1px solid var(--border-color); border-radius:8px; font-size:16px; outline:none; background:var(--card-bg); color:var(--text-dark); }
+.textarea-control { resize:vertical; min-height:100px; line-height: 1.5; }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.modal-actions button { flex:1; padding:12px; border-radius:25px; font-size:16px; font-weight:bold; cursor:pointer; border:none; }
+
+.water-list { max-height:250px; overflow-y:auto; margin-bottom:15px; }
+.water-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.water-row input { flex:1; }
+.del-btn { background:#ffebee; color:#f44336; border:none; border-radius:8px; width:45px; height:45px; font-size:20px; display:flex; justify-content:center; align-items:center; cursor:pointer; }
+
+.diet-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px; }
+.diet-item-modern { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 12px 5px; border-radius: 20px; font-weight: bold; transition: background 0.3s, color 0.3s; }
+.d-title { font-size: 16px; }
+.d-label { font-size: 13px; font-weight: normal; opacity: 0.9; }
+.d-val { font-size: 20px; }
+.status-remain { background: #fff8e1; color: #f5a623; }
+.status-exceed { background: #ffebee; color: #e53935; } 
+.status-zero { background: transparent; color: #b0b0b0; }
+
+.radio-group { display:flex; gap:15px; margin-bottom:15px; }
+.radio-label { display:flex; align-items:center; gap:5px; font-size:16px; cursor:pointer; }
+.sport-option { padding:12px; border:1px solid var(--border-color); border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:var(--card-bg); }
+.sport-option:active { background:var(--bg-color); }
+
+.history-item { border-bottom:1px solid var(--border-color); padding:12px 0; }
+.history-item:last-child { border-bottom:none; }
+.history-date { font-weight:bold; color:var(--primary-yellow); margin-bottom:7px; }
+.history-detail { font-size:14px; color:var(--text-light); line-height:1.8; }
+.chip-group { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; }
+.chip { padding:8px 12px; background:#e8f5e9; color:var(--primary-green); border:1px solid #c8e6c9; border-radius:16px; font-size:14px; cursor:pointer; font-weight:bold; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
+.chip:active { opacity: 0.7; }
+.delete-chip-btn { color: #f44336; font-size: 16px; margin-left: 4px; padding: 0 4px; cursor: pointer; border-radius: 50%; background: rgba(244, 67, 54, 0.1); line-height: 1; }
+.warning-text { font-size:12px; color:#f44336; margin-top:5px; font-weight:bold; }
+.info-text { font-size:12px; color:var(--primary-green); line-height:1.6; }
+.walk-group { display:flex; justify-content:space-between; margin-top:10px; background:var(--bg-color); padding:10px; border-radius:8px; }
+.walk-label { display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; }
+
+.tab-header { display:flex; border-bottom:1px solid var(--border-color); margin-bottom:15px; }
+.tab-btn { flex:1; padding:10px; text-align:center; font-weight:bold; cursor:pointer; border-bottom:2px solid transparent; }
+.tab-btn.active { color:var(--primary-yellow); border-bottom:2px solid var(--primary-yellow); }
+.tab-content { display:none; max-height:500px; overflow-y:auto; font-size:14px; padding-bottom: 20px; }
+.tab-content.active { display:block; }
+.cheat-list { padding-left:0; margin-bottom: 15px; }
+.cheat-list li { margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px; list-style:none; line-height:1.5; }
+
+.progress-bg { height:10px; background:var(--border-color); border-radius:20px; overflow:hidden; margin:8px 0; }
+.progress-bar { height:100%; background:var(--primary-green); border-radius:20px; transition:.3s; }
+.target-setting-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px; }
+.target-setting-row label { flex:1; font-size:14px; }
+.target-setting-row input { width:120px; text-align:center; }
+.small-note { font-size:12px; color:var(--text-light); line-height:1.6; }
+.setting-button { margin-top:10px; width:100%; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:transparent; color:var(--text-light); }
+.add-custom-chip-btn { width: 100%; padding: 8px; border: 1px dashed var(--primary-green); color: var(--primary-green); background: transparent; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 15px; }
+
+.auto-calc-box { background: var(--diet-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--primary-yellow); }
+
+.trend-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+.trend-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+.trend-progress-bg { height: 8px; background: var(--border-color); border-radius: 10px; overflow: hidden; }
+.trend-progress-fill { height: 100%; background: #2ecc71; border-radius: 10px; transition: 0.5s ease-in-out; }
+.trend-stats { display: flex; text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+.trend-stat-item { flex: 1; border-right: 1px solid var(--border-color); }
+.trend-stat-item:last-child { border-right: none; }
+.trend-stat-label { font-size: 12px; color: var(--text-light); }
+.trend-stat-value { font-size: 16px; font-weight: bold; margin-top: 5px; color: var(--text-dark); }
+.chart-tabs { display: flex; justify-content: space-around; margin-top: 10px; margin-bottom: 15px; }
+.chart-tab { text-align: center; cursor: pointer; padding-bottom: 8px; flex: 1; border-bottom: 3px solid transparent; transition: 0.2s; }
+.chart-tab.active-weight { border-bottom: 3px solid #2ecc71; }
+.chart-tab.active-fat { border-bottom: 3px solid #3498db; }
+.chart-val { font-size: 22px; font-weight: bold; color: var(--text-dark); margin-top: 2px; }
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00a65f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="飲控">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- 資訊總覽 -->
+    <div class="profile-header">
+        <div class="avatar">👦</div>
+        <div class="profile-info">
+            <div class="profile-name">資訊總覽</div>
+            <div class="profile-date">
+                <input type="date" id="date-selector" onchange="changeDate(this.value)">
+                <span id="display-date-day"></span>
+            </div>
+            <div class="target-stats">
+                <div class="stat-item"><div class="stat-label">目標體重</div><div class="stat-val" id="header-target-weight">73 kg</div></div>
+                <div class="stat-item"><div class="stat-label">當日體重</div><div class="stat-val" id="summary-weight">--</div></div>
+                <div class="stat-item"><div class="stat-label">剩餘體重</div><div class="stat-val" id="summary-remain">--</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 營養師建議 -->
+    <div class="card" style="border: 1px solid #c8e6c9; background: #f1f8e9;">
+        <div class="card-header" style="border-bottom: 1px solid #c8e6c9; color: var(--primary-green);">
+            👩‍⚕️ 營養師建議
+            <span class="view-record" onclick="openAdviceHistory()" style="color: var(--primary-green);">🔍 查看紀錄 ></span>
+        </div>
+        <div id="display-advice" style="font-size:14px; color:var(--text-dark); line-height:1.6; margin-bottom:15px; white-space: pre-wrap; word-wrap: break-word;">目前沒有建議，點擊下方新增！</div>
+        <button class="btn-outline" style="width:100%; padding:10px; background: white; border-color: #c8e6c9;" onclick="openModal('adviceModal')">✍️ 編輯建議</button>
+    </div>
+
+    <!-- 體重 -->
+    <div class="card">
+        <div class="card-header">當日體重體脂<span class="view-record" onclick="openWeightHistory()">📈 趨勢圖表 ></span></div>
+        <div class="card-content-row">
+            <div><div class="stat-label">體重</div><div class="val-display"><span id="main-weight">--</span> <span class="val-unit">kg</span></div></div>
+            <div><div class="stat-label">體脂</div><div class="val-display"><span id="main-fat">--</span> <span class="val-unit">%</span></div></div>
+        </div>
+        <button class="btn-fill" onclick="openModal('weightModal')">填寫記錄</button>
+    </div>
+
+    <!-- 水分 -->
+    <div class="card">
+        <div class="card-header">當日身體代謝<span class="view-record" onclick="openWaterHistory()">水分歷史 ></span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:bold;">
+            <span>水分攝取</span>
+            <span><span id="main-water" style="color:var(--primary-yellow)">0 ml</span> <span style="color:var(--text-light);font-weight:normal;">/ <span id="water-target-display">2400</span> ml</span></span>
+        </div>
+        <div class="progress-bg"><div class="progress-bar" id="water-progress"></div></div>
+        <div id="water-status" style="font-size:13px;font-weight:bold;margin:8px 0;"></div>
+        <div id="alert-water" class="warning-text" style="display:none;margin-bottom:10px;">⚠️ 已過晚上 9 點，口渴最多再喝 200-300 ml！</div>
+        <div id="sport-water-advice" class="info-text" style="display:none;margin-bottom:10px;">💡 運動補水建議：<span id="advice-ml">300</span>cc</div>
+        <button class="btn-fill" onclick="openWaterModal()" style="margin-bottom:25px;">填寫記錄</button>
+
+        <div style="display:flex;justify-content:space-between;margin-bottom:15px;font-weight:bold;">
+            <span>排便狀況</span><span id="main-poop" style="font-weight:normal;">尚未填寫</span>
+        </div>
+        <button class="btn-fill" onclick="openPoopModal()">填寫記錄</button>
+    </div>
+
+    <!-- 運動 -->
+    <div class="card">
+        <div class="card-header">運動紀錄<span class="view-record" onclick="openSportHistory()">運動歷史 ></span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:15px;font-weight:bold;">
+            <span>當日活動時間</span><span><span id="main-sport-hours" style="color:var(--primary-green)">0</span> 小時</span>
+        </div>
+        <div id="sport-list-display" style="margin-bottom:15px;font-size:14px;color:var(--text-light);">目前沒有運動記錄，點下方新增！</div>
+
+        <div id="sport-diet-advice" style="display:none; background:var(--diet-bg); border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:15px; font-size:13px; line-height:1.8;">
+            <b>🏃 運動後營養補充</b>
+            <div>運動增加主食：<b id="sport-extra-carbs">0</b> 份</div>
+            <div>運動增加肉類：<b id="sport-extra-meat">0</b> 份</div>
+            <div style="color:var(--primary-green);margin-top:5px;">💡 增加的主食可以在下午補；肉類可以分三餐或下午吃。</div>
+        </div>
+        <button class="btn-fill btn-green" onclick="openSportModal()">+ 新增運動</button>
+    </div>
+
+    <!-- 飲食 -->
+    <div class="card">
+        <div class="card-header">當日飲食記錄<span class="view-record" onclick="openDietHistory()">飲食記錄管理 ></span></div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">當日目標會依照運動自動增加</div>
+
+        <div class="diet-grid">
+            <div class="diet-item-modern" id="box-carbs"><span class="d-title">主食</span><span class="d-label" id="lbl-carbs">剩餘</span><span class="d-val" id="val-carbs">--</span></div>
+            <div class="diet-item-modern" id="box-meat"><span class="d-title">肉類</span><span class="d-label" id="lbl-meat">剩餘</span><span class="d-val" id="val-meat">--</span></div>
+            <div class="diet-item-modern" id="box-fruit"><span class="d-title">水果</span><span class="d-label" id="lbl-fruit">剩餘</span><span class="d-val" id="val-fruit">--</span></div>
+            <div class="diet-item-modern" id="box-veg"><span class="d-title">蔬菜</span><span class="d-label" id="lbl-veg">剩餘</span><span class="d-val" id="val-veg">--</span></div>
+        </div>
+        
+        <div id="alert-fruit" class="warning-text" style="display:none; text-align:center; margin-bottom:5px;">⚠️ 水果請於 17:30 前食用完畢</div>
+        <div id="alert-veg" class="warning-text" style="display:none; text-align:center; margin-bottom:10px;">⚠️ 晚上 8 點後禁吃蔬菜</div>
+
+        <div style="margin-top:15px;border-top:1px solid var(--border-color);padding-top:15px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:14px;">腸胃狀況追蹤</span>
+                <label style="font-size:14px;display:flex;align-items:center;gap:5px;cursor:pointer;">
+                    <input type="checkbox" id="check-indigestion" onchange="toggleIndigestion(this.checked)">消化不完全
+                </label>
+            </div>
+            <div id="indigestion-advice" style="display:none; font-size:12px; color:#d68910; background:var(--diet-bg); padding:8px; border-radius:8px; margin-bottom:15px;">
+                💡 營養師建議：暫時降低1份水果，可選木瓜、奇異果或火龍果，餐後走動5-10分鐘。
+            </div>
+            <span style="font-weight:bold;font-size:14px;">餐後走動打卡 (5-10分)</span>
+            <div class="walk-group">
+                <label class="walk-label"><input type="checkbox" id="walk-morning" onchange="saveWalk('morning',this.checked)">早餐</label>
+                <label class="walk-label"><input type="checkbox" id="walk-noon" onchange="saveWalk('noon',this.checked)">午餐</label>
+                <label class="walk-label"><input type="checkbox" id="walk-night" onchange="saveWalk('night',this.checked)">晚餐</label>
+            </div>
+        </div>
+
+        <button class="btn-fill" style="margin-top:15px;" onclick="openDietModal()">填寫記錄</button>
+        <button class="btn-outline" style="width:100%;margin-top:10px;padding:10px;" onclick="openModal('cheatSheetModal')">🔍 查看營養師食物對照表</button>
+        <button class="btn-outline" style="width:100%; margin-top:10px; padding:10px; color:#f44336; border-color:#ffcdd2;" onclick="deductMissedMorning()">⚠️ 過早上10:30未進食 (扣4主1肉)</button>
+    </div>
+
+    <!-- 設定與備份 -->
+    <div class="card">
+        <div class="card-header">系統設定與備份</div>
+        <div class="small-note">設定每日目標，包含計算圖表的初始體重。</div>
+        <button class="setting-button" onclick="openSettings()">⚙️ 修改每日目標</button>
+        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <div class="small-note" style="margin-bottom: 10px; color: #d68910;">⚠️ 資料皆儲存於本機，建議定期匯出備份，以免誤清快取導致資料遺失。</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-outline" style="flex: 1; padding: 10px; border-radius: 8px;" onclick="exportData()">💾 匯出備份</button>
+                <button class="btn-outline" style="flex: 1; padding: 10px; border-radius: 8px; position: relative;" onclick="document.getElementById('import-file').click()">
+                    📂 匯入還原
+                    <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 區塊 -->
+<div class="modal-overlay" id="adviceModal"><div class="modal-content"><button class="close-btn" onclick="closeModal('adviceModal')">×</button><div class="modal-title">編輯營養師建議</div><div class="input-group"><textarea id="input-advice" class="textarea-control" placeholder="請輸入..."></textarea></div><div class="modal-actions"><button class="btn-outline" onclick="closeModal('adviceModal')">取消</button><button class="btn-green btn-fill" onclick="saveAdvice()">儲存</button></div></div></div>
+<div class="modal-overlay" id="weightModal"><div class="modal-content"><button class="close-btn" onclick="closeModal('weightModal')">×</button><div class="modal-title">編輯體重體脂</div><div class="input-group"><label>體重 (kg)</label><input type="number" id="input-weight" class="input-control" step="0.1"></div><div class="input-group"><label>體脂 (%)</label><input type="number" id="input-fat" class="input-control" step="0.1"></div><div class="modal-actions"><button class="btn-outline" onclick="closeModal('weightModal')">取消</button><button class="btn-green btn-fill" onclick="saveWeight()">儲存</button></div></div></div>
+
+<div class="modal-overlay" id="waterModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('waterModal')">×</button>
+        <div class="modal-title">水分攝取</div>
+        <div style="text-align:center;margin-bottom:15px;">
+            <p>當日水分 <span id="modal-water-total" style="color:var(--primary-green);font-weight:bold;font-size:18px;">0</span> ml</p>
+            <p style="font-size:12px;color:var(--text-light);margin-top:5px;" id="water-msg"></p>
+        </div>
+        
+        <!-- 飲水外掛快捷按鈕 -->
+        <div class="chip-group" style="justify-content:center; margin-bottom:15px;">
+            <div class="chip" onclick="quickAddWater(300)" style="font-size:16px; padding:10px 20px;">+ 💧 300 ml</div>
+            <div class="chip" onclick="quickAddWater(1000)" style="font-size:16px; padding:10px 20px;">+ 💧 1000 ml</div>
+        </div>
+
+        <div class="water-list" id="water-inputs-container"></div>
+        <div class="modal-actions">
+            <button class="btn-outline" onclick="closeModal('waterModal')">取消</button>
+            <button class="btn-green btn-fill" onclick="saveWater()">儲存</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="sportModal"><div class="modal-content"><button class="close-btn" onclick="closeSportModal()">×</button><div class="modal-title">新增運動</div><div class="input-group"><label>選擇運動</label><div id="sport-options-container"><div class="sport-option" onclick="selectSport('慢跑(8km/hr)')"><span>🏃‍♂️ 慢跑</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('騎腳踏車')"><span>🚴‍♂️ 腳踏車</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('游泳')"><span>🏊‍♂️ 游泳</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('重訓/健身')"><span>🏋️‍♂️ 重訓</span><span>選擇 ></span></div></div></div><div class="input-group" id="sport-time-box" style="display:none;"><label id="selected-sport-title" style="color:var(--primary-green);font-weight:bold;"></label><label style="margin-top:10px;">時數(小時)</label><input type="number" id="input-sport-hours" class="input-control" step="0.5" value="1"><div style="margin-top:10px;"><label class="radio-label"><input type="checkbox" id="input-sweat" style="width:20px;height:20px;">流很多汗 (+500cc 水)</label></div></div><div class="modal-actions"><button class="btn-outline" onclick="closeSportModal()">取消</button><button class="btn-green btn-fill" id="save-sport-btn" style="display:none;" onclick="saveSport()">確認新增</button></div></div></div>
+
+<div class="modal-overlay" id="poopModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('poopModal')">×</button>
+        <div class="modal-title">排便狀況</div>
+        
+        <!-- 大便一鍵打卡按鈕 -->
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">點擊快捷按鈕直接增加次數：</p>
+        <div class="chip-group" style="margin-bottom:15px;">
+            <div class="chip" onclick="quickAddPoop('正常')" style="font-size:15px;">+ 💩 1次 (正常)</div>
+            <div class="chip" onclick="quickAddPoop('其他')" style="font-size:15px;">+ 💩 1次 (其他)</div>
+            <div class="chip" style="background:#ffebee; color:#f44336; border-color:#ffcdd2;" onclick="resetPoop()">重置歸零</div>
+        </div>
+
+        <div class="input-group">
+            <label>目前總次數</label>
+            <input type="number" id="input-poop-count" class="input-control" value="0">
+        </div>
+        <div class="input-group">
+            <label>狀況 (以上方快捷按鈕為主，也可手動修改)</label>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="poop-status" value="正常" checked>正常</label>
+                <label class="radio-label"><input type="radio" name="poop-status" value="其他">其他</label>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>備註</label>
+            <input type="text" id="input-poop-note" class="input-control">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-outline" onclick="closeModal('poopModal')">取消</button>
+            <button class="btn-green btn-fill" onclick="savePoop()">儲存</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="dietModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('dietModal')">×</button>
+        <div class="modal-title">記錄飲食消耗</div>
+        
+        <div style="background:var(--diet-bg); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border-color);">
+            <div style="font-size:14px; font-weight:bold; margin-bottom:10px; color:var(--text-dark);">📅 記錄到哪一餐？ <span id="meal-auto-hint" style="font-size:11px; color:var(--primary-green); font-weight:normal;"></span></div>
+            <div class="radio-group" style="display:flex; justify-content:space-between; gap:5px; margin-bottom:0;">
+                <label class="radio-label" style="font-size:14px;"><input type="radio" name="meal-type" value="morning" id="meal-morning">早餐</label>
+                <label class="radio-label" style="font-size:14px;"><input type="radio" name="meal-type" value="noon" id="meal-noon">午餐</label>
+                <label class="radio-label" style="font-size:14px;"><input type="radio" name="meal-type" value="night" id="meal-night">晚餐</label>
+                <label class="radio-label" style="font-size:14px;"><input type="radio" name="meal-type" value="snack" id="meal-snack">點心</label>
+            </div>
+        </div>
+
+        <div class="auto-calc-box">
+            <div style="font-size:14px; font-weight:bold; margin-bottom:10px; color:var(--text-dark);">🧠 BOM 進階解碼器 (透明運算)</div>
+            <div class="input-group">
+                <select id="decoder-type" class="input-control" onchange="toggleDecoderInputs()" style="padding:8px; font-size:14px; width:100%;">
+                    <option value="snack_sugar">🍩 一般含糖零食 (嚴格: 脂肪/7)</option>
+                    <option value="snack_protein">🥩 高蛋白零食 (嚴格: 脂+蛋/7)</option>
+                    <option value="dried_fruit">🍎 純果乾無油 (嚴格: 碳水/15)</option>
+                    <option value="pastry_general">🥮 一般糕餅/鳳梨酥 (脂肪/7, 糖/20)</option>
+                    <option value="pastry_yolk">🌕 蛋黃酥/月餅特規 (蛋黃寬容: 脂肪/10, 糖/25)</option>
+                </select>
+            </div>
+            
+            <div style="font-size:12px; color:var(--text-light); margin-bottom:5px;">請輸入營養標示 (依欄位需求)：</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px;">
+                <input type="number" id="dec-carbs" class="input-control" placeholder="總碳水 (g)">
+                <input type="number" id="dec-sugar" class="input-control" placeholder="糖 (g)">
+                <input type="number" id="dec-protein" class="input-control" placeholder="蛋白質 (g)">
+                <input type="number" id="dec-fat" class="input-control" placeholder="脂肪 (g)">
+            </div>
+            <div style="font-size:11px; color:#f44336; margin-bottom:10px; font-weight:bold;">⚠️ 嚴禁以高脂零食的脂肪抵扣肉類額度，會掉肌肉！</div>
+            <button style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--primary-yellow); color:white; font-weight:bold; cursor:pointer;" onclick="runDecoder()">⚙️ 執行解碼、顯示 Log 並帶入</button>
+        </div>
+        
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">或點擊下方食物快速帶入：</p>
+        <div class="chip-group" id="dynamic-chip-group"></div>
+        <button class="add-custom-chip-btn" onclick="openAddChipModal()">➕ 新增自訂食物按鈕</button>
+        
+        <div style="border-top:1px dashed var(--border-color);margin:15px 0;"></div>
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:15px;text-align:center;">本次扣除總計 (加入至選定餐別)</p>
+        <div class="input-group"><label>吃掉的主食 (份)</label><input type="number" id="eat-carbs" class="input-control" value="0" min="0" step="0.1"></div>
+        <div class="input-group"><label>吃掉的肉類 (份)</label><input type="number" id="eat-meat" class="input-control" value="0" min="0" step="0.1"></div>
+        <div class="input-group"><label>吃掉的水果 (份)</label><input type="number" id="eat-fruit" class="input-control" value="0" min="0" step="0.5"></div>
+        <div class="input-group"><label>吃掉的蔬菜 (份)</label><input type="number" id="eat-veg" class="input-control" value="0" min="0" step="0.5"></div>
+        <div class="modal-actions"><button class="btn-outline" onclick="resetDietTarget()">重置當日飲食</button><button class="btn-green btn-fill" onclick="saveDiet()">確認新增</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="addChipModal"><div class="modal-content"><button class="close-btn" onclick="closeModal('addChipModal')">×</button><div class="modal-title">自訂快捷食物</div><div class="input-group"><label>圖示</label><input type="text" id="custom-chip-icon" class="input-control" placeholder="例如: 🍠" maxlength="2"></div><div class="input-group"><label>食物名稱</label><input type="text" id="custom-chip-name" class="input-control" placeholder="例如: 地瓜65g"></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"><div class="input-group"><label>主食 (份)</label><input type="number" id="custom-chip-c" class="input-control" step="0.5" value="0"></div><div class="input-group"><label>肉類 (份)</label><input type="number" id="custom-chip-m" class="input-control" step="0.5" value="0"></div><div class="input-group"><label>水果 (份)</label><input type="number" id="custom-chip-f" class="input-control" step="0.5" value="0"></div><div class="input-group"><label>蔬菜 (份)</label><input type="number" id="custom-chip-v" class="input-control" step="0.5" value="0"></div></div><div class="modal-actions"><button class="btn-outline" onclick="closeModal('addChipModal')">取消</button><button class="btn-green btn-fill" onclick="saveCustomChip()">新增按鈕</button></div></div></div>
+
+<!-- 每日目標設定 -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('settingsModal')">×</button>
+        <div class="modal-title">⚙️ 每日目標設定</div>
+        
+        <div class="auto-calc-box" style="border-color: var(--primary-green);">
+            <div style="font-size:14px; font-weight:bold; margin-bottom:10px; color:var(--primary-green);">⚡ 系統規格精算 (System Config)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                <div><label style="font-size:12px;color:var(--text-light);">性別</label><select id="calc-gender" class="input-control" style="padding:8px;"><option value="M">男性</option><option value="F">女性</option></select></div>
+                <div><label style="font-size:12px;color:var(--text-light);">年齡 (歲)</label><input type="number" id="calc-age" class="input-control" placeholder="歲"></div>
+                <div><label style="font-size:12px;color:var(--text-light);">身高 (cm)</label><input type="number" id="calc-height" class="input-control" placeholder="cm"></div>
+                <div><label style="font-size:12px;color:var(--text-light);">目前體重 (kg)</label><input type="number" id="calc-weight" class="input-control" step="0.1" placeholder="kg"></div>
+            </div>
+            <button style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--primary-green); color:white; font-weight:bold; cursor:pointer;" onclick="autoCalculateTargets()">🔄 重新精算並帶入下方目標</button>
+            <div id="calc-result-text" style="display:none; font-size:13px; margin-top:10px; color:#d68910; font-weight:bold; text-align:center; background: #fffcf5; padding: 8px; border-radius: 6px; border: 1px dashed #d68910;"></div>
+        </div>
+
+        <div style="border-top:1px dashed var(--border-color);margin:15px 0;"></div>
+        
+        <div class="target-setting-row"><label>🏁 初始體重 (kg)</label><input type="number" id="setting-initial-weight" class="input-control" step="0.1" placeholder="未設定抓第一筆"></div>
+        <div class="target-setting-row"><label>🏁 初始體脂 (%)</label><input type="number" id="setting-initial-fat" class="input-control" step="0.1" placeholder="未設定抓第一筆"></div>
+        <div style="border-top:1px dashed var(--border-color);margin:15px 0;"></div>
+        <div class="target-setting-row"><label>🎯 目標體重 (kg)</label><input type="number" id="setting-weight" class="input-control" step="0.1"></div>
+        <div class="target-setting-row"><label>💧 每日水量 (ml)</label><input type="number" id="setting-water" class="input-control" step="100"></div>
+        <div class="target-setting-row"><label>🍚 每日主食 (份)</label><input type="number" id="setting-carbs" class="input-control" step="0.5"></div>
+        <div class="target-setting-row"><label>🥩 每日肉類 (份)</label><input type="number" id="setting-meat" class="input-control" step="0.5"></div>
+        <div class="target-setting-row"><label>🍎 每日水果 (份)</label><input type="number" id="setting-fruit" class="input-control" step="1"></div>
+        <div class="target-setting-row"><label>🥬 每日蔬菜 (份)</label><input type="number" id="setting-veg" class="input-control" step="1"></div>
+        <div class="modal-actions"><button class="btn-outline" onclick="closeModal('settingsModal')">取消</button><button class="btn-green btn-fill" onclick="saveSettings()">儲存目標</button></div>
+    </div>
+</div>
+
+<!-- 營養師食物克數表 (含防呆特規) -->
+<div class="modal-overlay" id="cheatSheetModal">
+    <div class="modal-content" style="max-width:480px;">
+        <button class="close-btn" onclick="closeModal('cheatSheetModal')">×</button>
+        <div class="modal-title">營養師食物克數表</div>
+        <div class="tab-header" style="overflow-x:auto; white-space:nowrap; padding-bottom:5px;">
+            <div class="tab-btn active" onclick="switchTab('tab-carbs',this)">主食類</div>
+            <div class="tab-btn" onclick="switchTab('tab-meat',this)">肉類與奶</div>
+            <div class="tab-btn" onclick="switchTab('tab-fruit',this)">水果類</div>
+            <div class="tab-btn" style="color:#d68910;" onclick="switchTab('tab-rules',this)">⚠️防呆與特規</div>
+        </div>
+        
+        <div id="tab-carbs" class="tab-content active">
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【原型澱粉與麵食】</div>
+            <ul class="cheat-list">
+                <li><b>白飯：</b>1碗 = 4主 (約200g，1主=50g)</li>
+                <li><b>白麵條：</b>1碗熟麵 = 3主 (約180g) / 乾生麵60g = 3主</li>
+                <li><b>地瓜：</b>1碗 = 3主 / 雞蛋大小(約65g) = 1主</li>
+                <li><b>玉米：</b>1支 = 2主 / 玉米粒3湯匙 = 1主</li>
+                <li><b>馬鈴薯：</b>2/3碗 = 1主 (約180g)</li>
+                <li><b>芋頭 / 南瓜：</b>1碗 = 2主</li>
+                <li><b>燕麥片：</b>2湯匙 = 1主 (約20g)</li>
+                <li><b>米苔目 / 麵線：</b>1碗 = 2主</li>
+                <li><b>冬粉 / 河粉 / 烏龍麵：</b>1碗 = 3主</li>
+                <li><b>紅豆 / 綠豆 / 薏仁：</b>1碗 = 4主</li>
+                <li><b>珍珠：</b>1杯 = 2主</li>
+            </ul>
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【麵包、包子與外食】</div>
+            <ul class="cheat-list">
+                <li><b>吐司：</b>去邊1片 = 1主 / 有邊1片 = 1.5主 / 拱形 = 2主</li>
+                <li><b>漢堡包 / 菜包：</b>1個 = 3主</li>
+                <li><b>貝果 / 饅頭：</b>1個 = 4主</li>
+                <li><b>傳統飯糰(無油條)：</b>大(約2/3手掌) = 4主1肉 / 小 = 3主1肉</li>
+                <li><b>肉包：</b>1顆 = 3主1肉</li>
+                <li><b>水煎包：</b>1顆 = 2主1肉 (⚠️油脂偏高)</li>
+                <li><b>水餃：</b>大2顆 = 1主1肉 / 小3顆 = 1主1肉</li>
+                <li><b>餛飩：</b>大1顆 = 0.5主1肉 / 小4顆 = 1主1肉</li>
+                <li><b>原味蛋餅：</b>1份 = 2主1肉</li>
+                <li><b>潤餅(春捲)：</b>1條 = 2主2肉 (無糖粉/蛋酥/香腸)</li>
+                <li><b>刈包：</b>1個 = 3主2肉 (無糖粉/肥肉)</li>
+                <li><b>越式涼皮春捲：</b>1條 = 1主1肉</li>
+            </ul>
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【超商熟食區】</div>
+            <ul class="cheat-list">
+                <li><b>超商果醬吐司：</b>1份 = 2主1果</li>
+                <li><b>三角飯糰(鮭魚/燒肉/雞肉/溏心蛋)：</b>1個 = 2主1肉</li>
+                <li><b>烤飯糰：</b>1個 = 2主1肉</li>
+                <li><b>三明治(紐奧良烤雞)：</b>1個 = 2主2肉</li>
+                <li><b>三明治(照燒雞溏心蛋)：</b>1個 = 2主1.5肉</li>
+                <li><b>握便當：</b>1個 = 3主2肉</li>
+                <li><b>桂格飲用燕麥/顆粒燕麥：</b>1瓶 = 2主</li>
+            </ul>
+        </div>
+        
+        <div id="tab-meat" class="tab-content">
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【海鮮、蛋與豆製品】</div>
+            <ul class="cheat-list">
+                <li><b>雞蛋：</b>1顆 = 1肉</li>
+                <li><b>板豆腐 / 中華嫩豆腐：</b>3湯匙 = 1肉</li>
+                <li><b>黃豆干：</b>1片 = 1肉 / 大黑豆干1片 = 3肉</li>
+                <li><b>濕豆包 / 素雞：</b>1片/條 = 2肉</li>
+                <li><b>毛豆：</b>15莢(3湯匙) = 1肉</li>
+                <li><b>無糖豆花：</b>1碗 = 1肉</li>
+                <li><b>鮮蚵：</b>2湯匙 = 1肉</li>
+                <li><b>蛤蜊：</b>10顆 = 1肉</li>
+                <li><b>蝦類：</b>草蝦3隻 / 泰國蝦2隻 / 明蝦1隻 = 皆1肉</li>
+                <li><b>花枝 / 墨魚：</b>3圈 = 1肉</li>
+            </ul>
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【禽畜肉品】</div>
+            <ul class="cheat-list">
+                <li><b>肉塊(雞牛豬羊鴨魚)：</b>兩指大小 = 1肉 (實秤約30g)</li>
+                <li><b>火鍋肉片：</b>豬/雞3片=1肉 / 牛肉橢圓3片=1肉 / 牛長條2片=1肉</li>
+                <li><b>肉絲 / 肉末 / 肉鬆：</b>2湯匙 = 1肉</li>
+                <li><b>棒棒雞腿：</b>1根 = 2肉</li>
+                <li><b>L型大雞腿：</b>1根 = 4肉</li>
+                <li><b>義式舒肥雞胸肉：</b>40g = 1肉</li>
+            </ul>
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【乳製品與豆漿】</div>
+            <ul class="cheat-list">
+                <li><b>鮮奶：</b>全脂120cc / 低脂150cc / 脫脂240cc = 皆1肉</li>
+                <li><b>奶粉：</b>3湯匙 = 1肉</li>
+                <li><b>快樂牛低脂起司：</b>1片 = 0.5肉</li>
+                <li><b>無糖優酪乳：</b>福樂1瓶 = 2肉 / 統一AB1瓶 = 1.5肉</li>
+                <li><b>無糖優格/乳果：</b>福樂100g = 1肉 / 統一AB1個 = 1.5肉</li>
+                <li><b>無糖豆漿：</b>統一(綠盒) = 2肉 / 統一生機(淺綠) = 1肉</li>
+                <li><b>桂格豆漿燕麥：</b>1瓶 = 1主1肉</li>
+                <li><b>無糖拿鐵(City Cafe)：</b>小杯=1肉 / 中杯=1.5肉 / 大杯=2肉</li>
+                <li><b>無糖拿鐵(Starbucks)：</b>中杯=2肉 / 大杯=3肉 / 特大杯=3.5肉</li>
+            </ul>
+        </div>
+        
+        <div id="tab-fruit" class="tab-content">
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【2 果計算 (約含 30g 碳水)】</div>
+            <ul class="cheat-list">
+                <li><b>1 顆 = 2果：</b>蘋果(約250g)、芭樂(約300g)、水蜜桃(約280g)、釋迦(果肉約150g)、甜柿(約200g)、火龍果(果肉約250g)、葡萄柚(果肉約300g)</li>
+                <li><b>1 根 = 2果：</b>香蕉(果肉約140g)</li>
+                <li><b>2/3 碗 = 2果：</b>鳳梨釋迦(果肉約150g)</li>
+            </ul>
+            <div style="font-weight:bold; color:var(--primary-green); margin:10px 0 5px;">【1 果計算 (約含 15g 碳水)】</div>
+            <ul class="cheat-list">
+                <li><b>1 碗 = 1果：</b>藍莓(實秤100g)、木瓜(150g)、西瓜(180g)、芒果(150g)、鳳梨(130g)、草莓(160g)、櫻桃(約9-10顆/85g)、蓮霧(約2顆/170g)</li>
+                <li><b>1 顆 = 1果：</b>奇異果(100g)、李子(100g)、甜桃(150g)、柳丁(果肉130g)、橘子(果肉130g)、棗子(100g)</li>
+                <li><b>2/3 碗 = 1果：</b>水梨(140g)</li>
+                <li><b>1.5 碗 = 1果：</b>哈密瓜(200g)</li>
+                <li><b>多顆計算 = 1果：</b>小番茄12顆(150g)、葡萄10顆(130g)、龍眼12顆(果肉80g)、荔枝5顆(果肉90g)、百香果2顆(果肉90g)</li>
+            </ul>
+        </div>
+
+        <div id="tab-rules" class="tab-content">
+            <div style="font-weight:bold; color:#d68910; margin:10px 0 5px;">【特規封裝與視覺判定】</div>
+            <ul class="cheat-list">
+                <li><b>中秋柚子：</b>不糾結克數。一般文旦 5片 = 1果；大白柚/紅柚 3片 = 1果。</li>
+                <li><b>節慶糕點(蛋黃酥)：</b>照片這款「洛神木槿菓蛋黃酥(60g)」實測 = 扣 2主 1.5肉 0.5果。請多利用 BOM 內的進階解碼器推算。</li>
+                <li><b>超商果醬吐司：</b>1份 = 扣 2主 1果 (果醬精緻糖極高，轉扣水果額度防呆)。無脂肪不扣肉。</li>
+                <li><b>日出鳳梨酥(35g)：</b>扣 1主 1肉 0.5果</li>
+                <li><b>LeTAO巧克力餅乾：</b>3片 = 扣 1主 1.5肉</li>
+            </ul>
+            <div style="font-weight:bold; color:#d68910; margin:10px 0 5px;">【堅果與油脂防呆機制】</div>
+            <ul class="cheat-list">
+                <li><b>本質：</b>堅果是「純油脂」，不是肉。</li>
+                <li><b>免扣點外掛：</b>當餐「完全無油」(如純水煮) 時，可吃 10g (約1湯匙) 堅果補油，免扣肉。</li>
+                <li><b>🚨紅燈：</b>若當餐已有炒菜、煎肉等烹調油脂，強烈建議避開堅果。</li>
+            </ul>
+            <div style="font-weight:bold; color:#d68910; margin:10px 0 5px;">【異常排除與地雷防堵】</div>
+            <ul class="cheat-list">
+                <li><b>進食時序防呆：</b>正餐澱粉若吃太少，務必在隨餐 1 小時內補足目標份數，嚴防「大小餐」造成代謝當機。</li>
+                <li><b>體重回升緊急處置：</b>1. 暫停甜食 2. 晚餐蛋白質改「白肉」，嚴禁紅肉。</li>
+                <li><b>吸油載體迴避：</b>肉絲炒菜、麻辣燙，只挑肉吃！菜葉會吸附大量油脂，吃菜等於喝油。</li>
+                <li><b>🆓 免扣點外掛：</b>純水、無糖氣泡水、無糖仙草/愛玉、純蒟蒻絲、無糖茶、黑咖啡。</li>
+            </ul>
+        </div>
+        
+        <div class="modal-actions"><button class="btn-fill" onclick="closeModal('cheatSheetModal')">關閉</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="historyModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('historyModal')">×</button>
+        <div class="modal-title" id="history-title" style="margin-bottom:10px;">歷史紀錄</div>
+        <div id="history-search-container"></div>
+        <div id="history-list" style="max-height:75vh;overflow-y:auto; overflow-x:hidden;"></div>
+    </div>
+</div>
+
+<script>
+/* 基本設定與日期 */
+const days = ['日','一','二','三','四','五','六'];
+function formatDate(dateObj) { return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`; }
+
+const realTodayObj = new Date();
+const realTodayStr = formatDate(realTodayObj);
+let currentDateStr = realTodayStr; 
+let dailyData = {};
+
+let targets = JSON.parse(localStorage.getItem('health_targets')) || { targetWeight:73, initialWeight:0, initialFat:0, water:2400, carbs:12, meat:8, fruit:2, veg:2 };
+targets = { 
+    targetWeight: Number(targets.targetWeight)||73, 
+    initialWeight: Number(targets.initialWeight)||0, 
+    initialFat: Number(targets.initialFat)||0, 
+    water: Number(targets.water)||2400, 
+    carbs: Number(targets.carbs)||12, 
+    meat: Number(targets.meat)||8, 
+    fruit: Number(targets.fruit)||2, 
+    veg: Number(targets.veg)||2 
+};
+
+let userProfile = JSON.parse(localStorage.getItem('health_user_profile')) || { gender: 'M', age: '', height: '', weight: '' };
+
+let customChips = JSON.parse(localStorage.getItem('health_custom_chips')) || [];
+
+function renderChips() {
+    document.getElementById('dynamic-chip-group').innerHTML = customChips.map((chip, index) => {
+        return `<div class="chip"><div style="flex:1; cursor:pointer;" onclick="quickAddDiet(${chip.c}, ${chip.m}, ${chip.f}, ${chip.v})">+ ${chip.icon} ${escapeHTML(chip.name)}</div><span class="delete-chip-btn" onclick="deleteCustomChip(${index})" title="刪除">×</span></div>`;
+    }).join('');
+}
+function openAddChipModal() { ['icon','name','c','m','f','v'].forEach(id => document.getElementById(`custom-chip-${id}`).value = id==='icon'||id==='name'?'':'0'); openModal('addChipModal'); }
+function saveCustomChip() {
+    const name = document.getElementById('custom-chip-name').value;
+    if(!name) return alert('請輸入名稱！');
+    customChips.push({ icon: document.getElementById('custom-chip-icon').value||'🍽️', name, c: Number(document.getElementById('custom-chip-c').value)||0, m: Number(document.getElementById('custom-chip-m').value)||0, f: Number(document.getElementById('custom-chip-f').value)||0, v: Number(document.getElementById('custom-chip-v').value)||0 });
+    localStorage.setItem('health_custom_chips', JSON.stringify(customChips)); renderChips(); closeModal('addChipModal');
+}
+function deleteCustomChip(i) { if(confirm('確定刪除這個食物按鈕嗎？')) { customChips.splice(i, 1); localStorage.setItem('health_custom_chips', JSON.stringify(customChips)); renderChips(); } }
+
+function storageKey(date) { return `health_record_${date}`; }
+
+function loadDataForDate(dateStr) {
+    const defaultData = { advice: '', weight: '', fat: '', waterEntries: [], poop: { count:0, status:'正常', note:'' }, sports: [], dietConsumed: { carbs:0, meat:0, fruit:0, veg:0 }, lastMealTime: null, indigestion: false, walks: { morning:false, noon:false, night:false } };
+    let savedRaw = localStorage.getItem(storageKey(dateStr)) || localStorage.getItem(`health_v3_${dateStr}`);
+    dailyData = savedRaw ? JSON.parse(savedRaw) : JSON.parse(JSON.stringify(defaultData));
+    
+    if(!dailyData.dietConsumed) dailyData.dietConsumed = { carbs:0, meat:0, fruit:0, veg:0 };
+    if(!dailyData.meals) {
+        dailyData.meals = {
+            morning: {c:0, m:0, f:0, v:0},
+            noon: {c:0, m:0, f:0, v:0},
+            night: {c:0, m:0, f:0, v:0},
+            snack: {c:0, m:0, f:0, v:0}
+        };
+        if(dailyData.dietConsumed.carbs > 0 || dailyData.dietConsumed.meat > 0 || dailyData.dietConsumed.fruit > 0 || dailyData.dietConsumed.veg > 0) {
+            dailyData.meals.snack = { c: dailyData.dietConsumed.carbs, m: dailyData.dietConsumed.meat, f: dailyData.dietConsumed.fruit, v: dailyData.dietConsumed.veg };
+        }
+    }
+    if(!dailyData.poop) dailyData.poop = { count:0, status:'正常', note:'' };
+    if(!dailyData.walks) dailyData.walks = { morning:false, noon:false, night:false };
+}
+
+function changeDate(newDateStr) {
+    if(!newDateStr) return;
+    currentDateStr = newDateStr;
+    const dObj = new Date(currentDateStr);
+    document.getElementById('display-date-day').innerText = ` 星期${days[dObj.getDay()]}`;
+    loadDataForDate(currentDateStr);
+    updateUI();
+}
+
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+window.onclick = e => { if(e.target.classList.contains('modal-overlay')) e.target.style.display='none'; };
+
+/* 🚀 進階版 BOM 拆解邏輯 (顯示運算 Log) */
+function toggleDecoderInputs() {
+    const type = document.getElementById('decoder-type').value;
+    
+    // 控制欄位顯示 (原則上全開，保留彈性)
+    document.getElementById('dec-sugar').style.display = (type.includes('pastry')) ? 'block' : 'none';
+    document.getElementById('dec-protein').style.display = (type === 'snack_protein' || type.includes('pastry')) ? 'block' : 'none';
+    document.getElementById('dec-fat').style.display = (type !== 'dried_fruit') ? 'block' : 'none';
+}
+
+function runDecoder() {
+    const type = document.getElementById('decoder-type').value;
+    let deductC = 0, deductM = 0, deductF = 0;
+    let logMsg = '';
+    
+    const carbs = Number(document.getElementById('dec-carbs').value) || 0;
+    const protein = Number(document.getElementById('dec-protein').value) || 0;
+    const fat = Number(document.getElementById('dec-fat').value) || 0;
+    const sugar = Number(document.getElementById('dec-sugar').value) || 0;
+    
+    // 無條件進位至 0.5 單位
+    const roundHalf = (num) => Math.round(num * 2) / 2;
+    
+    if (type === 'dried_fruit') { 
+        deductF = roundHalf(carbs / 15);
+        logMsg = `[純果乾公式]\n🍎 水果: 碳水 ${carbs}g ÷ 15 = ${(carbs/15).toFixed(2)} ➔ ${deductF}份`;
+    } 
+    else if (type === 'snack_sugar') { 
+        deductC = roundHalf(carbs / 15); 
+        deductM = roundHalf(fat / 7);
+        logMsg = `[含糖零食公式]\n🍚 主食: 碳水 ${carbs}g ÷ 15 = ${(carbs/15).toFixed(2)} ➔ ${deductC}份\n🥩 肉類: 脂肪 ${fat}g ÷ 7 = ${(fat/7).toFixed(2)} ➔ ${deductM}份`;
+    } 
+    else if (type === 'snack_protein') { 
+        deductC = roundHalf(carbs / 15); 
+        deductM = roundHalf((protein + fat) / 7);
+        logMsg = `[高蛋白零食公式]\n🍚 主食: 碳水 ${carbs}g ÷ 15 = ${(carbs/15).toFixed(2)} ➔ ${deductC}份\n🥩 肉類: (蛋白${protein}g + 脂肪${fat}g) ÷ 7 = ${((protein+fat)/7).toFixed(2)} ➔ ${deductM}份`;
+    }
+    else if (type === 'pastry_general') {
+        deductC = roundHalf(carbs / 15);
+        deductM = roundHalf((fat) / 7);
+        deductF = roundHalf(sugar / 20); // 一般糕餅精緻糖懲罰
+        logMsg = `[一般糕餅/鳳梨酥公式]\n🍚 主食: 碳水 ${carbs}g ÷ 15 = ${(carbs/15).toFixed(2)} ➔ ${deductC}份\n🥩 肉類: 脂肪 ${fat}g ÷ 7(嚴格標準) = ${(fat/7).toFixed(2)} ➔ ${deductM}份\n🍎 水果: 糖 ${sugar}g ÷ 20(精緻糖懲罰) = ${(sugar/20).toFixed(2)} ➔ ${deductF}份`;
+    }
+    else if (type === 'pastry_yolk') {
+        deductC = roundHalf(carbs / 15);
+        deductM = roundHalf(fat / 10);
+        deductF = roundHalf(sugar / 25); // 蛋黃酥特規糖懲罰
+        logMsg = `[蛋黃酥/月餅公式]\n🍚 主食: 碳水 ${carbs}g ÷ 15 = ${(carbs/15).toFixed(2)} ➔ ${deductC}份\n🥩 肉類: 脂肪 ${fat}g ÷ 10(蛋黃寬容值) = ${(fat/10).toFixed(2)} ➔ ${deductM}份\n🍎 水果: 糖 ${sugar}g ÷ 25(蛋黃特規懲罰) = ${(sugar/25).toFixed(2)} ➔ ${deductF}份`;
+    }
+    
+    if(deductC > 0) document.getElementById('eat-carbs').value = (Number(document.getElementById('eat-carbs').value||0) + deductC).toFixed(1);
+    if(deductM > 0) document.getElementById('eat-meat').value = (Number(document.getElementById('eat-meat').value||0) + deductM).toFixed(1);
+    if(deductF > 0) document.getElementById('eat-fruit').value = (Number(document.getElementById('eat-fruit').value||0) + deductF).toFixed(1);
+    
+    alert(`BOM 運算完成！結果已帶入欄位\n--------------------\n${logMsg}`);
+    
+    ['dec-carbs', 'dec-protein', 'dec-fat', 'dec-sugar'].forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).value = '';
+    });
+}
+
+function calculateDiet(){
+    const totalHours = dailyData.sports.reduce((s,x)=>s+Number(x.hours||0),0);
+    const targetFruit = dailyData.indigestion ? Math.max(0, Number(targets.fruit) - 1) : Number(targets.fruit);
+    return { remainCarbs: (Number(targets.carbs) + (totalHours * 1.5)) - Number(dailyData.dietConsumed.carbs), remainMeat: (Number(targets.meat) + (totalHours * 1)) - Number(dailyData.dietConsumed.meat), remainFruit: targetFruit - Number(dailyData.dietConsumed.fruit), remainVeg: Number(targets.veg) - Number(dailyData.dietConsumed.veg), totalHours, boostCarbs: totalHours*1.5, boostMeat: totalHours };
+}
+
+function calculateWater(){
+    const totalHours = dailyData.sports.reduce((s,x)=>s+Number(x.hours||0),0);
+    return { currentWaterTarget: Number(targets.water) + (totalHours > 0 ? (dailyData.sports.some(s=>s.sweat) ? 500 : 300) : 0), adviceVal: totalHours > 0 ? (dailyData.sports.some(s=>s.sweat) ? 500 : 300) : 0, totalHours };
+}
+
+function updateDietBox(idPrefix, remainVal) {
+    const box = document.getElementById(`box-${idPrefix}`), lbl = document.getElementById(`lbl-${idPrefix}`), val = document.getElementById(`val-${idPrefix}`);
+    box.className = 'diet-item-modern';
+    if (remainVal > 0) { box.classList.add('status-remain'); lbl.innerText = '剩餘'; val.innerText = Number.isInteger(remainVal)?remainVal:remainVal.toFixed(1); } 
+    else if (remainVal < 0) { box.classList.add('status-exceed'); lbl.innerText = '超過'; val.innerText = Number.isInteger(Math.abs(remainVal))?Math.abs(remainVal):Math.abs(remainVal).toFixed(1); } 
+    else { box.classList.add('status-zero'); lbl.innerText = '剩餘'; val.innerText = '0'; }
+}
+function formatNumber(v){ const n=Number(v); return Number.isInteger(n)?n:n.toFixed(1); }
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' })[m]); }
+function saveData(){ localStorage.setItem(storageKey(currentDateStr), JSON.stringify(dailyData)); updateUI(); }
+
+function updateUI(){
+    checkTimeAlerts();
+    document.getElementById('display-advice').innerText = dailyData.advice || '目前沒有建議，點擊下方新增！';
+    document.getElementById('display-advice').style.color = dailyData.advice ? 'var(--text-dark)' : 'var(--text-light)';
+    
+    document.getElementById('main-weight').innerText = dailyData.weight || '--';
+    document.getElementById('main-fat').innerText = dailyData.fat || '--';
+    document.getElementById('summary-weight').innerText = dailyData.weight ? `${dailyData.weight} kg` : '--';
+    document.getElementById('summary-remain').innerText = dailyData.weight ? `${(parseFloat(dailyData.weight) - targets.targetWeight).toFixed(1)} kg` : '--';
+    document.getElementById('header-target-weight').innerText = `${targets.targetWeight} kg`;
+
+    const waterInfo = calculateWater(), totalWater = dailyData.waterEntries.reduce((a,b)=>a+Number(b||0),0);
+    document.getElementById('water-target-display').innerText = waterInfo.currentWaterTarget;
+    document.getElementById('main-water').innerText = `${totalWater} ml`;
+    document.getElementById('water-progress').style.width = `${Math.min(100, (totalWater/waterInfo.currentWaterTarget)*100)}%`;
+    const wStatus = document.getElementById('water-status');
+    if(totalWater < waterInfo.currentWaterTarget) { wStatus.style.color='var(--primary-yellow)'; wStatus.innerText=`💧 還差 ${waterInfo.currentWaterTarget - totalWater} ml`; }
+    else { wStatus.style.color='var(--primary-green)'; wStatus.innerText=`✅ 已達標${totalWater > waterInfo.currentWaterTarget ? `，超出 ${totalWater-waterInfo.currentWaterTarget} ml` : ''}`; }
+    document.getElementById('sport-water-advice').style.display = waterInfo.totalHours>0 ? 'block' : 'none';
+    if(waterInfo.totalHours>0) document.getElementById('advice-ml').innerText = waterInfo.adviceVal;
+
+    document.getElementById('main-sport-hours').innerText = waterInfo.totalHours;
+    document.getElementById('sport-list-display').innerHTML = dailyData.sports.length ? dailyData.sports.map((s,i)=>`<div style="display:flex; justify-content:space-between; background:var(--bg-color); padding:8px 12px; border-radius:8px; margin-bottom:5px;"><span>🏃 ${escapeHTML(s.name)} (${Number(s.hours)}h) ${s.sweat?'💦':''}</span><button onclick="removeSport(${i})" style="background:none; border:none; color:red; cursor:pointer;">🗑</button></div>`).join('') : '目前沒有記錄！';
+
+    const diet = calculateDiet();
+    document.getElementById('sport-extra-carbs').innerText = diet.boostCarbs;
+    document.getElementById('sport-extra-meat').innerText = diet.boostMeat;
+    document.getElementById('sport-diet-advice').style.display = diet.totalHours>0 ? 'block' : 'none';
+
+    ['carbs','meat','fruit','veg'].forEach(k => updateDietBox(k, diet[`remain${k.charAt(0).toUpperCase()+k.slice(1)}`]));
+    document.getElementById('main-poop').innerText = dailyData.poop.count>0 ? `${dailyData.poop.count}次 (${dailyData.poop.status})` : '尚未填寫';
+    document.getElementById('check-indigestion').checked = dailyData.indigestion;
+    document.getElementById('indigestion-advice').style.display = dailyData.indigestion ? 'block' : 'none';
+    ['morning','noon','night'].forEach(m => document.getElementById(`walk-${m}`).checked = dailyData.walks[m]);
+}
+
+function saveAdvice() { dailyData.advice = document.getElementById('input-advice').value; saveData(); closeModal('adviceModal'); }
+function saveWeight(){ dailyData.weight = document.getElementById('input-weight').value; dailyData.fat = document.getElementById('input-fat').value; saveData(); closeModal('weightModal'); }
+
+/* 飲水量紀錄功能 */
+let tempWaterEntries=[];
+function openWaterModal(){ 
+    tempWaterEntries = [...dailyData.waterEntries]; 
+    if(tempWaterEntries.length === 0 || tempWaterEntries[tempWaterEntries.length-1] !== '') {
+        tempWaterEntries.push(''); 
+    }
+    renderWaterRows(); 
+    openModal('waterModal'); 
+}
+function renderWaterRows(){ 
+    document.getElementById('water-inputs-container').innerHTML = tempWaterEntries.map((a,i)=>`
+        <div class="water-row">
+            <span style="font-size:14px;color:var(--text-light);">飲水量</span>
+            <input type="number" class="input-control" value="${a}" oninput="handleWaterInput(${i}, this)">
+            <button class="del-btn" onclick="removeWaterRow(${i})">🗑</button>
+        </div>`).join(''); 
+    document.getElementById('modal-water-total').innerText=tempWaterEntries.reduce((x,y)=>x+Number(y||0),0); 
+}
+function handleWaterInput(i, el) {
+    tempWaterEntries[i] = el.value;
+    document.getElementById('modal-water-total').innerText = tempWaterEntries.reduce((x,y)=>x+Number(y||0),0);
+    if (i === tempWaterEntries.length - 1 && el.value !== '') {
+        tempWaterEntries.push('');
+        const newIndex = tempWaterEntries.length - 1;
+        const newRow = document.createElement('div');
+        newRow.className = 'water-row';
+        newRow.innerHTML = `
+            <span style="font-size:14px;color:var(--text-light);">飲水量</span>
+            <input type="number" class="input-control" value="" oninput="handleWaterInput(${newIndex}, this)">
+            <button class="del-btn" onclick="removeWaterRow(${newIndex})">🗑</button>
+        `;
+        document.getElementById('water-inputs-container').appendChild(newRow);
+    }
+}
+function removeWaterRow(i){ 
+    tempWaterEntries.splice(i,1); 
+    if(!tempWaterEntries.length || tempWaterEntries[tempWaterEntries.length-1] !== '') tempWaterEntries.push(''); 
+    renderWaterRows(); 
+}
+function quickAddWater(val) {
+    let placed = false;
+    for (let i = 0; i < tempWaterEntries.length; i++) {
+        if (tempWaterEntries[i] === '') {
+            tempWaterEntries[i] = val;
+            placed = true;
+            break;
+        }
+    }
+    if (!placed) tempWaterEntries.push(val);
+    if (tempWaterEntries[tempWaterEntries.length - 1] !== '') tempWaterEntries.push('');
+    renderWaterRows();
+}
+function saveWater(){ 
+    dailyData.waterEntries = tempWaterEntries.filter(v=>v!==''&&Number(v)>0).map(Number); 
+    saveData(); 
+    closeModal('waterModal'); 
+}
+
+/* 運動紀錄功能 */
+let selectedSportName='';
+function selectSport(name){ selectedSportName=name; document.getElementById('sport-options-container').style.display='none'; document.getElementById('selected-sport-title').innerText = `已選擇：${name}`; document.getElementById('sport-time-box').style.display='block'; document.getElementById('save-sport-btn').style.display='block'; }
+function openSportModal(){ selectedSportName=''; document.getElementById('sport-time-box').style.display='none'; document.getElementById('save-sport-btn').style.display='none'; document.getElementById('sport-options-container').style.display='block'; document.getElementById('input-sport-hours').value=1; document.getElementById('input-sweat').checked=false; openModal('sportModal'); }
+function closeSportModal(){ closeModal('sportModal'); }
+function saveSport(){ if(!selectedSportName || !Number(document.getElementById('input-sport-hours').value)) return alert('資料不全'); dailyData.sports.push({ name:selectedSportName, hours:Number(document.getElementById('input-sport-hours').value), sweat:document.getElementById('input-sweat').checked }); saveData(); closeSportModal(); }
+function removeSport(i){ if(confirm('確定刪除？')){ dailyData.sports.splice(i,1); saveData(); } }
+
+/* 大便紀錄功能 */
+function openPoopModal() {
+    document.getElementById('input-poop-count').value = dailyData.poop.count || 0;
+    if (dailyData.poop.status) {
+        let radio = document.querySelector(`input[name="poop-status"][value="${dailyData.poop.status}"]`);
+        if(radio) radio.checked = true;
+    }
+    document.getElementById('input-poop-note').value = dailyData.poop.note || '';
+    openModal('poopModal');
+}
+function quickAddPoop(status) {
+    let countInput = document.getElementById('input-poop-count');
+    countInput.value = (parseInt(countInput.value) || 0) + 1;
+    document.querySelector(`input[name="poop-status"][value="${status}"]`).checked = true;
+}
+function resetPoop() {
+    document.getElementById('input-poop-count').value = 0;
+}
+function savePoop(){ 
+    dailyData.poop = { count: parseInt(document.getElementById('input-poop-count').value)||0, status: document.querySelector('input[name="poop-status"]:checked').value, note: document.getElementById('input-poop-note').value }; 
+    saveData(); 
+    closeModal('poopModal'); 
+}
+
+/* 飲食記錄功能 */
+function openDietModal() {
+    const now = new Date();
+    let targetMeal = 'morning';
+    let hintText = '';
+    if (dailyData.lastMealTime) {
+        const lastTime = new Date(dailyData.lastMealTime);
+        const diffHours = (now - lastTime) / (1000 * 60 * 60);
+        if (diffHours < 3) { targetMeal = dailyData.lastMealType || 'morning'; hintText = `💡 距離上次進食不到 3 小時，自動歸類至同一餐`; }
+    }
+    if (!hintText) {
+        const h = now.getHours();
+        if (h >= 4 && h < 11) targetMeal = 'morning';
+        else if (h >= 11 && h < 16) targetMeal = 'noon';
+        else if (h >= 16 && h < 22) targetMeal = 'night';
+        else targetMeal = 'snack';
+        hintText = `💡 依系統時間自動判定`;
+    }
+    document.getElementById(`meal-${targetMeal}`).checked = true;
+    document.getElementById('meal-auto-hint').innerText = hintText;
+    openModal('dietModal');
+}
+function quickAddDiet(c,m,f,v){ document.getElementById('eat-carbs').value = Number(document.getElementById('eat-carbs').value||0) + c; document.getElementById('eat-meat').value = Number(document.getElementById('eat-meat').value||0) + m; document.getElementById('eat-fruit').value = Number(document.getElementById('eat-fruit').value||0) + f; document.getElementById('eat-veg').value = Number(document.getElementById('eat-veg').value||0) + v; }
+function saveDiet(){ 
+    const mealType = document.querySelector('input[name="meal-type"]:checked').value;
+    if(!dailyData.meals) { dailyData.meals = { morning: {c:0,m:0,f:0,v:0}, noon: {c:0,m:0,f:0,v:0}, night: {c:0,m:0,f:0,v:0}, snack: {c:0,m:0,f:0,v:0} }; }
+    const c = Number(document.getElementById('eat-carbs').value)||0;
+    const m = Number(document.getElementById('eat-meat').value)||0;
+    const f = Number(document.getElementById('eat-fruit').value)||0;
+    const v = Number(document.getElementById('eat-veg').value)||0;
+    dailyData.meals[mealType].c += c; dailyData.meals[mealType].m += m; dailyData.meals[mealType].f += f; dailyData.meals[mealType].v += v;
+    dailyData.dietConsumed.carbs += c; dailyData.dietConsumed.meat += m; dailyData.dietConsumed.fruit += f; dailyData.dietConsumed.veg += v;
+    dailyData.lastMealTime = new Date().toISOString(); dailyData.lastMealType = mealType;
+    ['carbs','meat','fruit','veg'].forEach(k => document.getElementById(`eat-${k}`).value=0); 
+    saveData(); closeModal('dietModal'); 
+}
+function resetDietTarget(){ 
+    if(confirm('確定將今日飲食紀錄全部歸零？')){ 
+        dailyData.dietConsumed = { carbs:0, meat:0, fruit:0, veg:0 }; 
+        dailyData.meals = { morning: {c:0,m:0,f:0,v:0}, noon: {c:0,m:0,f:0,v:0}, night: {c:0,m:0,f:0,v:0}, snack: {c:0,m:0,f:0,v:0} };
+        dailyData.lastMealTime = null; dailyData.lastMealType = null;
+        saveData(); closeModal('dietModal'); 
+    } 
+}
+function deductMissedMorning(){ 
+    if(confirm('扣除過10:30未進食額度(4主1肉)？將歸於早餐。')){ 
+        if(!dailyData.meals) { dailyData.meals = { morning: {c:0,m:0,f:0,v:0}, noon: {c:0,m:0,f:0,v:0}, night: {c:0,m:0,f:0,v:0}, snack: {c:0,m:0,f:0,v:0} }; }
+        dailyData.meals.morning.c += 4; dailyData.meals.morning.m += 1;
+        dailyData.dietConsumed.carbs += 4; dailyData.dietConsumed.meat += 1; 
+        saveData(); 
+    } 
+}
+function toggleIndigestion(val){ dailyData.indigestion=val; saveData(); }
+function saveWalk(meal,val){ dailyData.walks[meal]=val; saveData(); }
+function checkTimeAlerts(){ if(currentDateStr !== realTodayStr) { ['alert-fruit','alert-veg','alert-water'].forEach(id=>document.getElementById(id).style.display='none'); return; } const h = new Date().getHours() + new Date().getMinutes()/60; document.getElementById('alert-fruit').style.display = h>=17.5 ? 'block' : 'none'; document.getElementById('alert-veg').style.display = h>=20 ? 'block' : 'none'; document.getElementById('alert-water').style.display = h>=21 ? 'block' : 'none'; }
+setInterval(checkTimeAlerts, 60000);
+
+/* 設定與備份 */
+function openSettings() { 
+    document.getElementById('setting-weight').value = targets.targetWeight; 
+    document.getElementById('setting-initial-weight').value = targets.initialWeight || '';
+    document.getElementById('setting-initial-fat').value = targets.initialFat || '';
+    document.getElementById('setting-water').value = targets.water;
+    document.getElementById('setting-carbs').value = targets.carbs;
+    document.getElementById('setting-meat').value = targets.meat;
+    document.getElementById('setting-fruit').value = targets.fruit;
+    document.getElementById('setting-veg').value = targets.veg;
+    
+    document.getElementById('calc-gender').value = userProfile.gender || 'M'; 
+    document.getElementById('calc-age').value = userProfile.age || ''; 
+    document.getElementById('calc-height').value = userProfile.height || ''; 
+    document.getElementById('calc-weight').value = userProfile.weight || ''; 
+    document.getElementById('calc-result-text').style.display = 'none'; 
+    openModal('settingsModal'); 
+}
+function autoCalculateTargets() {
+    const gender = document.getElementById('calc-gender').value, age = parseInt(document.getElementById('calc-age').value), height = parseInt(document.getElementById('calc-height').value), weight = parseFloat(document.getElementById('calc-weight').value);
+    if(!age || !height || !weight) return alert("請填寫完整的年齡、身高與目前體重資料！");
+    userProfile = { gender, age, height, weight }; localStorage.setItem('health_user_profile', JSON.stringify(userProfile));
+    
+    // System Config Logic
+    const bmi = (weight / Math.pow(height/100, 2)).toFixed(1);
+    let bmr = (gender === 'M') ? (10 * weight) + (6.25 * height) - (5 * age) + 5 : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    
+    let calcWater = Math.ceil((weight * 30) / 100) * 100; // 體重 × 30cc (進位至百位)
+    let calcCarbs = Math.round((bmr * 0.5) / 70);
+    let calcMeat = Math.round(weight / 10);
+    if(gender === 'F' && calcMeat < 6) calcMeat = 6; // 女性保護底線 6 份
+    else if(calcMeat < 6) calcMeat = 6;
+    
+    document.getElementById('setting-water').value = calcWater;
+    document.getElementById('setting-carbs').value = calcCarbs;
+    document.getElementById('setting-meat').value = calcMeat;
+    document.getElementById('setting-fruit').value = (gender === 'M') ? 3 : 2;
+    document.getElementById('setting-veg').value = (gender === 'M') ? 2 : 1.5;
+    
+    const resText = document.getElementById('calc-result-text');
+    resText.innerHTML = `💡 BMI: ${bmi} | 基礎代謝: ${Math.round(bmr)} 大卡<br>✅ 已套用 BOM 基準精算，請點擊「儲存目標」。`; resText.style.display = 'block';
+}
+function saveSettings() { 
+    targets = { 
+        targetWeight: Number(document.getElementById('setting-weight').value)||73, 
+        initialWeight: Number(document.getElementById('setting-initial-weight').value)||0,
+        initialFat: Number(document.getElementById('setting-initial-fat').value)||0,
+        water: Number(document.getElementById('setting-water').value)||2400, 
+        carbs: Number(document.getElementById('setting-carbs').value)||0, 
+        meat: Number(document.getElementById('setting-meat').value)||0, 
+        fruit: Number(document.getElementById('setting-fruit').value)||0, 
+        veg: Number(document.getElementById('setting-veg').value)||0 
+    }; 
+    localStorage.setItem('health_targets', JSON.stringify(targets)); 
+    saveData(); 
+    closeModal('settingsModal'); 
+    alert('🎯 目標已更新！'); 
+}
+
+/* 歷史記錄功能 (共用) */
+function getAllHistory(){ const h=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith('health_record_')){ try{ h.push({ date:k.replace('health_record_',''), data:JSON.parse(localStorage.getItem(k)) }); }catch(e){} } } return h.sort((a,b)=>a.date.localeCompare(b.date)); }
+function showHistory(title, html, searchInput = '') { 
+    document.getElementById('history-title').innerText = title; 
+    document.getElementById('history-search-container').innerHTML = searchInput;
+    document.getElementById('history-list').innerHTML = html; 
+    openModal('historyModal'); 
+}
+
+function openDietHistory() {
+    const allData = getAllHistory().filter(x => x.data.meals || x.data.dietConsumed);
+    if(allData.length === 0) return showHistory('🍽️ 飲食記錄管理', '<p style="text-align:center;color:var(--text-light);padding:20px;">無紀錄</p>');
+
+    const html = allData.reverse().map(x => {
+        const d = x.data;
+        const dc = d.dietConsumed || {carbs:0, meat:0, fruit:0, veg:0}; 
+        const m = d.meals || { morning: {c:0, m:0, f:0, v:0}, noon: {c:0, m:0, f:0, v:0}, night: {c:0, m:0, f:0, v:0}, snack: {c: dc.carbs||0, m: dc.meat||0, f: dc.fruit||0, v: dc.veg||0} };
+        const renderMealCard = (title, mealData) => `
+            <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div style="font-weight:bold; color:var(--primary-green); font-size:16px; margin-bottom:12px;">${title}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px; color:var(--text-dark);">
+                    <div>主食：<b>${formatNumber(mealData.c)}</b> 份</div>
+                    <div>肉類：<b>${formatNumber(mealData.m)}</b> 份</div>
+                    <div>水果：<b>${formatNumber(mealData.f)}</b> 份</div>
+                    <div>蔬菜：<b>${formatNumber(mealData.v)}</b> 份</div>
+                </div>
+            </div>`;
+        return `
+        <details style="margin-bottom:10px; background:var(--bg-color); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+            <summary style="font-weight:bold; color:var(--text-dark); cursor:pointer; font-size:15px; outline:none;">
+                <span style="color:var(--primary-yellow);">📅</span> ${x.date} 飲食紀錄
+            </summary>
+            <div style="margin-top:15px;">
+                ${renderMealCard('早餐', m.morning)}
+                ${renderMealCard('午餐', m.noon)}
+                ${renderMealCard('晚餐', m.night)}
+                ${(m.snack.c>0 || m.snack.m>0 || m.snack.f>0 || m.snack.v>0) ? renderMealCard('點心 / 其他', m.snack) : ''}
+            </div>
+        </details>`;
+    }).join('');
+    showHistory('🍽️ 飲食記錄管理', html + `<div class="modal-actions" style="margin-top:20px;"><button class="btn-fill" onclick="closeModal('historyModal')">關閉</button></div>`);
+}
+
+let trendChartInstance = null;
+let cachedTrendData = [];
+
+// iPhone 單檔離線版：不用任何外部圖表函式庫，避免從「檔案」開啟時 Chart.js 無法載入。
+// 保留原本體重／體脂趨勢功能，改用原生 Canvas 繪圖。
+function drawTrendChart(mode) {
+    const canvas = document.getElementById('trendCanvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(280, Math.floor(rect.width || canvas.parentElement.clientWidth || 320));
+    const height = 240;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,width,height);
+
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+    const textColor = isDark ? '#aaaaaa' : '#888888';
+    const color = mode === 'weight' ? '#2ecc71' : '#3498db';
+    const vals = cachedTrendData.map(d => Number(d.data[mode])).filter(v => Number.isFinite(v));
+    if (!vals.length) return;
+    const minV = Math.min(...vals), maxV = Math.max(...vals);
+    const padV = Math.max((maxV-minV)*0.15, mode === 'weight' ? 0.5 : 0.5);
+    const lo = minV-padV, hi = maxV+padV;
+    const L=42, R=12, T=16, B=30, PW=width-L-R, PH=height-T-B;
+
+    ctx.font='10px -apple-system,BlinkMacSystemFont,sans-serif';
+    ctx.fillStyle=textColor; ctx.strokeStyle=gridColor; ctx.lineWidth=1;
+    for(let i=0;i<4;i++){
+        const y=T+PH*i/3;
+        const value=hi-(hi-lo)*i/3;
+        ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(width-R,y); ctx.stroke();
+        ctx.fillText(value.toFixed(1), 3, y+3);
+    }
+    const points=[];
+    const n=cachedTrendData.length;
+    cachedTrendData.forEach((d,i)=>{
+        const v=Number(d.data[mode]);
+        if(!Number.isFinite(v)) return;
+        const x=n<=1 ? L+PW/2 : L+PW*i/(n-1);
+        const y=T+(hi-v)/(hi-lo)*PH;
+        points.push({x,y,label:String(d.date).substring(5),v});
+    });
+    if(!points.length) return;
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath(); points.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
+    ctx.fillStyle=color;
+    points.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle=textColor; ctx.textAlign='center';
+    const step=Math.max(1,Math.ceil(points.length/6));
+    points.forEach((p,i)=>{if(i%step===0 || i===points.length-1) ctx.fillText(p.label,p.x,height-10);});
+    ctx.textAlign='start';
+}
+
+function openWeightHistory() {
+    const allData = getAllHistory().filter(x => x.data.weight || x.data.fat);
+    if(allData.length === 0) return showHistory('📈 體重體脂趨勢', '<p style="text-align:center;padding:20px;color:var(--text-light);">尚無體重紀錄</p>');
+
+    const targetW = targets.targetWeight;
+    const firstEntry = allData[0].data;
+    const lastEntry = allData[allData.length - 1].data;
+    const startW = targets.initialWeight > 0 ? targets.initialWeight : (Number(firstEntry.weight) || targetW);
+    const startFat = targets.initialFat > 0 ? targets.initialFat : (Number(firstEntry.fat) || 0);
+    const currentW = Number(lastEntry.weight) || targetW;
+    const remainW = Math.max(0, currentW - targetW).toFixed(1);
+    
+    let progress = 0;
+    if (startW > targetW) { progress = ((startW - currentW) / (startW - targetW)) * 100; } 
+    else if (startW < targetW) { progress = ((currentW - startW) / (targetW - startW)) * 100; }
+    progress = Math.min(100, Math.max(0, progress));
+
+    const currentFat = Number(lastEntry.fat) || 0;
+    const weightChange = (currentW - startW).toFixed(1);
+    const fatChange = (currentFat - startFat).toFixed(1);
+    const dateRange = `${allData[0].date} ~ ${allData[allData.length-1].date}`;
+
+    const html = `
+        <div class="trend-card"><div class="trend-header"><span>體重達標率</span><span style="font-size:22px;">${progress.toFixed(0)}%</span></div><div class="trend-progress-bg"><div class="trend-progress-fill" style="width:${progress}%"></div></div><div class="trend-stats"><div class="trend-stat-item"><div class="trend-stat-label">目標體重</div><div class="trend-stat-value">${targetW} kg</div></div><div class="trend-stat-item"><div class="trend-stat-label">今日體重</div><div class="trend-stat-value">${currentW} kg</div></div><div class="trend-stat-item"><div class="trend-stat-label">剩餘體重</div><div class="trend-stat-value">${remainW} kg</div></div></div></div>
+        <div class="trend-card"><div style="text-align:right; font-size:12px; color:var(--text-light); margin-bottom:10px;">🗓️ 圖表區間：${dateRange}</div><div class="chart-tabs"><div class="chart-tab active-weight" id="tab-weight" onclick="switchTrendChart('weight')"><div style="font-size:12px; color:var(--text-light); font-weight:bold;">🟢 總體重變化</div><div class="chart-val">${weightChange > 0 ? '+'+weightChange : weightChange} kg</div></div><div class="chart-tab" id="tab-fat" onclick="switchTrendChart('fat')"><div style="font-size:12px; color:var(--text-light); font-weight:bold;">🔵 總體脂變化</div><div class="chart-val">${fatChange > 0 ? '+'+fatChange : fatChange} %</div></div></div><div style="position:relative; height:240px; width:100%;"><canvas id="trendCanvas"></canvas></div></div>
+        <details style="margin-top:10px; cursor:pointer; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border-color);"><summary style="font-size:13px; color:var(--text-light); text-align:center; font-weight:bold;">📋 點擊查看詳細每日數據清單</summary><div style="margin-top:15px; border-top:1px dashed var(--border-color); padding-top:10px;">${[...allData].reverse().map(x=>`<div style="font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:5px;"><span style="color:var(--text-light)">${x.date}</span><span><b>${x.data.weight||'--'}</b> kg / <b>${x.data.fat||'--'}</b> %</span></div>`).join('')}</div></details>
+        <div class="modal-actions" style="margin-top:20px;"><button class="btn-fill" onclick="closeModal('historyModal')">關閉</button></div>
+    `;
+    showHistory('📈 體重體脂趨勢', html);
+    cachedTrendData = allData;
+    setTimeout(() => { switchTrendChart('weight'); }, 50);
+}
+function switchTrendChart(mode) {
+    document.getElementById('tab-weight').className = 'chart-tab ' + (mode === 'weight' ? 'active-weight' : '');
+    document.getElementById('tab-fat').className = 'chart-tab ' + (mode === 'fat' ? 'active-fat' : '');
+    drawTrendChart(mode);
+}
+
+function openAdviceHistory(){ 
+    const html = getAllHistory().filter(x=>x.data.advice).reverse().map(x=>`<div class="history-item advice-item"><div class="history-date">${x.date}</div><div class="history-detail advice-text" style="white-space:pre-wrap;">${escapeHTML(x.data.advice)}</div></div>`).join('') || '<p style="text-align:center;color:var(--text-light);padding:20px;">無紀錄</p>';
+    
+    const searchBar = `<input type="text" id="advice-search-input" class="input-control" placeholder="🔍 搜尋建議關鍵字..." onkeyup="filterAdviceHistory()" style="margin-bottom:15px;">`;
+    
+    showHistory('👩‍⚕️ 營養師建議紀錄', html, searchBar); 
+}
+function filterAdviceHistory() {
+    const term = document.getElementById('advice-search-input').value.toLowerCase();
+    document.querySelectorAll('.advice-item').forEach(el => {
+        const text = el.querySelector('.advice-text').innerText.toLowerCase();
+        el.style.display = text.includes(term) ? 'block' : 'none';
+    });
+}
+
+function openWaterHistory(){ showHistory('💧 水分歷史', getAllHistory().filter(x=>x.data.waterEntries?.length).reverse().map(x=>{ const t=x.data.waterEntries.reduce((a,b)=>a+Number(b),0), tg=Number(x.data.waterTarget||targets.water), d=t-tg; return `<div class="history-item"><div class="history-date">${x.date}</div><div class="history-detail">💧 實際：<b>${t} ml</b><br>🎯 目標：<b>${tg} ml</b><br>📌 結果：<b>${d<0?`差${Math.abs(d)}ml`:d===0?'達標':`超${d}ml`}</b></div></div>`; }).join('') || '<p style="text-align:center;color:var(--text-light);padding:20px;">無紀錄</p>'); }
+function openSportHistory(){ showHistory('🏃 運動歷史', getAllHistory().filter(x=>x.data.sports?.length).reverse().map(x=>{ const t=x.data.sports.reduce((a,s)=>a+Number(s.hours),0); return `<div class="history-item"><div class="history-date">${x.date}</div><div class="history-detail">${x.data.sports.map(s=>`<div>🏃 ${escapeHTML(s.name)} — ${Number(s.hours)}h ${s.sweat?'💦':''}</div>`).join('')}<br>⏱️ 總時數：<b>${t} h</b><br>🍚 主食：<b>+${t*1.5} 份</b><br>🥩 肉類：<b>+${t} 份</b></div></div>`; }).join('') || '<p style="text-align:center;color:var(--text-light);padding:20px;">無紀錄</p>'); }
+
+function switchTab(id,el){ document.querySelectorAll('.tab-content,.tab-btn').forEach(n=>n.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); }
+function exportData() { const d={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith('health_')) d[k]=localStorage.getItem(k); } const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"})); a.download=`健康紀錄備份_${realTodayStr}.json`; a.click(); }
+function importData(e) { const r=new FileReader(); r.onload=function(e){ try{ const d=JSON.parse(e.target.result); let c=0; for(const k in d) if(k.startsWith('health_')){ localStorage.setItem(k,d[k]); c++; } alert(`✅ 成功還原 ${c} 筆資料！`); location.reload(); }catch(err){ alert('❌ 檔案格式錯誤！'); } }; if(e.target.files[0]) r.readAsText(e.target.files[0]); e.target.value=''; }
+
+window.addEventListener('resize', () => {
+    const active = document.getElementById('tab-fat')?.classList.contains('active-fat') ? 'fat' : 'weight';
+    if(document.getElementById('trendCanvas')) drawTrendChart(active);
+});
+
+/* 系統啟動初始化 */
+document.getElementById('date-selector').value = currentDateStr;
+changeDate(currentDateStr); 
+renderChips(); 
+toggleDecoderInputs();
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
+      console.warn('PWA service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
