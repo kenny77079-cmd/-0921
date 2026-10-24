@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>每日健康紀錄 v1.5.1</title>
+<title>每日健康紀錄 v1.5.2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{--primary-yellow:#f5a623;--primary-green:#00a65f;--bg-color:#f5f6f8;--card-bg:#fff;--text-dark:#333;--text-light:#888;--border-color:#eee;--diet-bg:#fffcf5}
@@ -38,7 +38,7 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 <div class="app-container">
 <div class="profile-header">
 <div class="avatar">👦</div><div class="profile-info">
-<div class="profile-name">資訊總覽 <span class="travel-badge">v1.5.1</span></div>
+<div class="profile-name">資訊總覽 <span class="travel-badge">v1.5.2</span></div>
 <div class="profile-date"><select id="active-profile-select" onchange="switchProfile(this.value)" style="border:1px solid var(--border-color);border-radius:6px;padding:4px;background:var(--card-bg);color:var(--primary-green);font-weight:bold"><option value="M">👨 男生版</option><option value="F">👩 女生版</option></select><input type="date" id="date-selector" onchange="changeDate(this.value)"><span id="display-date-day"></span></div>
 <div class="target-stats">
 <div class="stat-item"><div class="stat-label">目標體重</div><div class="stat-val" id="header-target-weight">73 kg</div></div>
