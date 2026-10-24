@@ -181,8 +181,9 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 <script>
 const days=['日','一','二','三','四','五','六'];
 function formatDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-const realTodayObj=new Date(),realTodayStr=formatDate(realTodayObj);let currentDateStr=realTodayStr,dailyData={};
+let realTodayStr=formatDate(new Date());let currentDateStr=realTodayStr,dailyData={};
 let activeProfile=localStorage.getItem('health_active_profile')||'M';
+if(!['M','F'].includes(activeProfile))activeProfile='M';
 const defaultTargets={M:{targetWeight:72.6,initialWeight:72.6,initialFat:0,water:2400,carbs:13,meat:8,fruit:2,veg:2},F:{targetWeight:49.7,initialWeight:49.7,initialFat:0,water:1650,carbs:8,meat:7,fruit:2,veg:1.5}};
 let targets=JSON.parse(localStorage.getItem(`health_targets_${activeProfile}`))||JSON.parse(localStorage.getItem('health_targets'))||defaultTargets[activeProfile];
 targets={...defaultTargets[activeProfile],...targets,targetWeight:Number(targets.targetWeight)||defaultTargets[activeProfile].targetWeight,initialWeight:Number(targets.initialWeight)||defaultTargets[activeProfile].initialWeight,initialFat:Number(targets.initialFat)||0,water:Number(targets.water)||defaultTargets[activeProfile].water,carbs:Number(targets.carbs)||defaultTargets[activeProfile].carbs,meat:Number(targets.meat)||defaultTargets[activeProfile].meat,fruit:Number(targets.fruit)||defaultTargets[activeProfile].fruit,veg:Number(targets.veg)||defaultTargets[activeProfile].veg};
@@ -192,7 +193,7 @@ let customChips=JSON.parse(localStorage.getItem('health_custom_chips'))||[];
 
 function storageKey(date){return `health_record_${activeProfile}_${date}`}
 function legacyStorageKey(date){return `health_record_${date}`}
-function switchProfile(profile){if(profile===activeProfile)return;localStorage.setItem(`health_targets_${activeProfile}`,JSON.stringify(targets));activeProfile=profile;localStorage.setItem('health_active_profile',activeProfile);targets={...defaultTargets[activeProfile],...(JSON.parse(localStorage.getItem(`health_targets_${activeProfile}`))||{})};userProfile=JSON.parse(localStorage.getItem(`health_user_profile_${activeProfile}`))||{gender:activeProfile,age:'',height:'',weight:activeProfile==='M'?72.6:49.7};document.getElementById('active-profile-select').value=activeProfile;loadDataForDate(currentDateStr);updateUI();}
+function switchProfile(profile){if(profile===activeProfile){localStorage.setItem('health_active_profile',profile);return;}localStorage.setItem(`health_targets_${activeProfile}`,JSON.stringify(targets));activeProfile=profile;localStorage.setItem('health_active_profile',activeProfile);targets={...defaultTargets[activeProfile],...(JSON.parse(localStorage.getItem(`health_targets_${activeProfile}`))||{})};userProfile=JSON.parse(localStorage.getItem(`health_user_profile_${activeProfile}`))||{gender:activeProfile,age:'',height:'',weight:activeProfile==='M'?72.6:49.7};document.getElementById('active-profile-select').value=activeProfile;loadDataForDate(currentDateStr);updateUI();}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function formatNumber(v){const n=Number(v);return Number.isInteger(n)?n:n.toFixed(1)}
 function openModal(id){document.getElementById(id).style.display='flex'}
@@ -398,7 +399,7 @@ function saveSettings(){
 }
 
 /* Time */
-function checkTimeAlerts(){if(currentDateStr!==realTodayStr){['alert-fruit','alert-veg','alert-water'].forEach(id=>document.getElementById(id).style.display='none');return}const h=new Date().getHours()+new Date().getMinutes()/60;document.getElementById('alert-fruit').style.display=h>=17.5?'block':'none';document.getElementById('alert-veg').style.display=h>=20?'block':'none';document.getElementById('alert-water').style.display=h>=21?'block':'none'}setInterval(checkTimeAlerts,60000)
+function checkTimeAlerts(){if(currentDateStr!==formatDate(new Date())){['alert-fruit','alert-veg','alert-water'].forEach(id=>document.getElementById(id).style.display='none');return}const h=new Date().getHours()+new Date().getMinutes()/60;document.getElementById('alert-fruit').style.display=h>=17.5?'block':'none';document.getElementById('alert-veg').style.display=h>=20?'block':'none';document.getElementById('alert-water').style.display=h>=21?'block':'none'}setInterval(checkTimeAlerts,60000)
 
 /* History */
 function getAllHistory(){const h=[],prefix=`health_record_${activeProfile}_`;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(prefix)){const date=k.slice(prefix.length);try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}else if(activeProfile==='M'&&/^health_record_\d{4}-\d{2}-\d{2}$/.test(k)){const date=k.replace('health_record_','');if(!h.some(x=>x.date===date))try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}}return h.sort((a,b)=>a.date.localeCompare(b.date))}
@@ -413,9 +414,28 @@ function openSportHistory(){showHistory('🏃 運動歷史',getAllHistory().filt
 function switchTab(id,el){document.querySelectorAll('.tab-content,.tab-btn').forEach(n=>n.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active')}
 
 /* Backup */
-function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.1_${realTodayStr}.json`;a.click()}
+function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.2_${formatDate(new Date())}.json`;a.click()}
 function importData(e){const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);let c=0;for(const k in d)if(k.startsWith('health_')){localStorage.setItem(k,d[k]);c++}alert(`✅ 成功還原 ${c} 筆資料！`);location.reload()}catch(err){alert('❌ 檔案格式錯誤！')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''}
 
+// v1.5.2: iOS Safari / 主畫面 PWA 返回前景與跨午夜同步
+function syncCalendarDay(){
+  const today=formatDate(new Date());
+  if(today===realTodayStr)return;
+  const wasOnToday=(currentDateStr===realTodayStr);
+  realTodayStr=today;
+  // 使用者正在查看歷史日期時，不強制跳走
+  if(wasOnToday){
+    currentDateStr=today;
+    document.getElementById('date-selector').value=today;
+    changeDate(today);
+  }
+  checkTimeAlerts();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalendarDay()});
+window.addEventListener('pageshow',syncCalendarDay);
+window.addEventListener('focus',syncCalendarDay);
+setInterval(syncCalendarDay,30000);
+document.getElementById('active-profile-select').value=activeProfile;
 document.getElementById('date-selector').value=currentDateStr;changeDate(currentDateStr);renderChips();toggleDecoderInputs();
 </script>
 
