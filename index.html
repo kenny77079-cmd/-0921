@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>每日健康紀錄 v1.5.3</title>
+<title>每日健康紀錄 v1.5.4</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{--primary-yellow:#f5a623;--primary-green:#00a65f;--bg-color:#f5f6f8;--card-bg:#fff;--text-dark:#333;--text-light:#888;--border-color:#eee;--diet-bg:#fffcf5}
@@ -38,7 +38,7 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 <div class="app-container">
 <div class="profile-header">
 <div class="avatar">👦</div><div class="profile-info">
-<div class="profile-name">資訊總覽 <span class="travel-badge">v1.5.3</span></div>
+<div class="profile-name">資訊總覽 <span class="travel-badge">v1.5.4</span></div>
 <div class="profile-date"><select id="active-profile-select" onchange="switchProfile(this.value)" style="border:1px solid var(--border-color);border-radius:6px;padding:4px;background:var(--card-bg);color:var(--primary-green);font-weight:bold"><option value="M">👨 男生版</option><option value="F">👩 女生版</option></select><input type="date" id="date-selector" onchange="changeDate(this.value)"><span id="display-date-day"></span></div>
 <div class="target-stats">
 <div class="stat-item"><div class="stat-label">目標體重</div><div class="stat-val" id="header-target-weight">73 kg</div></div>
@@ -92,6 +92,7 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 </div>
 <div id="alert-fruit" class="warning-text" style="display:none;text-align:center;margin-bottom:5px">⚠️ 水果請於 17:30 前食用完畢</div>
 <div id="alert-veg" class="warning-text" style="display:none;text-align:center;margin-bottom:10px">⚠️ 晚上 8 點後禁吃蔬菜</div>
+<div id="diet-entry-list" style="margin-bottom:10px"></div>
 
 <button class="btn-outline" style="width:100%;margin-top:10px;padding:10px" onclick="openModal('cheatSheetModal')">🔍 查看營養師食物對照表</button>
 <button class="btn-outline" style="width:100%;margin-top:10px;padding:10px;color:#f44336;border-color:#ffcdd2" onclick="deductMissedMorning()">⚠️ 10:30前未進食 → 補記4主1肉</button>
@@ -128,7 +129,7 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 
 <div class="modal-overlay" id="waterModal"><div class="modal-content"><button class="close-btn" onclick="closeModal('waterModal')">×</button><div class="modal-title">水分攝取</div><div style="text-align:center;margin-bottom:15px"><p>當日水分 <span id="modal-water-total" style="color:var(--primary-green);font-weight:bold;font-size:18px">0</span> ml</p></div><div class="chip-group" style="justify-content:center;margin-bottom:15px"><div class="chip" onclick="quickAddWater(300)" style="font-size:16px;padding:10px 20px">+ 💧 300 ml</div><div class="chip" onclick="quickAddWater(1000)" style="font-size:16px;padding:10px 20px">+ 💧 1000 ml</div></div><div class="water-list" id="water-inputs-container"></div><div class="modal-actions"><button class="btn-outline" onclick="closeModal('waterModal')">取消</button><button class="btn-green btn-fill" onclick="saveWater()">儲存</button></div></div></div>
 
-<div class="modal-overlay" id="sportModal"><div class="modal-content"><button class="close-btn" onclick="closeSportModal()">×</button><div class="modal-title">新增運動</div><div class="input-group"><label>選擇運動</label><div id="sport-options-container"><div class="sport-option" onclick="selectSport('慢跑(8km/hr)')"><span>🏃‍♂️ 慢跑</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('騎腳踏車')"><span>🚴‍♂️ 腳踏車</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('游泳')"><span>🏊‍♂️ 游泳</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('重訓/健身')"><span>🏋️‍♂️ 重訓</span><span>選擇 ></span></div></div></div><div class="input-group" id="sport-time-box" style="display:none"><label id="selected-sport-title" style="color:var(--primary-green);font-weight:bold"></label><label style="margin-top:10px">時數(小時)</label><input type="number" id="input-sport-hours" class="input-control" step="0.5" value="1"><div style="margin-top:10px"><label class="radio-label"><input type="checkbox" id="input-sweat" style="width:20px;height:20px">流很多汗（額外補水 +500cc）</label></div><div style="margin-top:10px"><label class="radio-label"><input type="checkbox" id="input-strength-serving" style="width:20px;height:20px">套用重訓飲食加成（每小時 +1主 +2肉）</label></div></div><div class="modal-actions"><button class="btn-outline" onclick="closeSportModal()">取消</button><button class="btn-green btn-fill" id="save-sport-btn" style="display:none" onclick="saveSport()">確認新增</button></div></div></div>
+<div class="modal-overlay" id="sportModal"><div class="modal-content"><button class="close-btn" onclick="closeSportModal()">×</button><div class="modal-title">新增運動</div><div class="input-group"><label>選擇運動</label><div id="sport-options-container"><div class="sport-option" onclick="selectSport('慢跑(8km/hr)')"><span>🏃‍♂️ 慢跑</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('騎腳踏車')"><span>🚴‍♂️ 腳踏車</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('游泳')"><span>🏊‍♂️ 游泳</span><span>選擇 ></span></div><div class="sport-option" onclick="selectSport('重訓/健身')"><span>🏋️‍♂️ 重訓</span><span>選擇 ></span></div></div></div><div class="input-group" id="sport-time-box" style="display:none"><label id="selected-sport-title" style="color:var(--primary-green);font-weight:bold"></label><label style="margin-top:10px">時數(小時)</label><input type="number" id="input-sport-hours" class="input-control" step="0.5" value="1"><div style="margin-top:10px"><label class="radio-label"><input type="checkbox" id="input-sweat" style="width:20px;height:20px">流很多汗（僅記錄，不自動提高水量）</label></div><div style="margin-top:10px"><label class="radio-label"><input type="checkbox" id="input-strength-serving" style="width:20px;height:20px">套用重訓飲食加成（每小時 +1主 +2肉）</label></div></div><div class="modal-actions"><button class="btn-outline" onclick="closeSportModal()">取消</button><button class="btn-green btn-fill" id="save-sport-btn" style="display:none" onclick="saveSport()">確認新增</button></div></div></div>
 
 <div class="modal-overlay" id="poopModal"><div class="modal-content"><button class="close-btn" onclick="closeModal('poopModal')">×</button><div class="modal-title">排便狀況</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px">點擊快捷按鈕直接增加次數：</p><div class="chip-group"><div class="chip" onclick="quickAddPoop('正常')" style="font-size:15px">+ 💩 1次 (正常)</div><div class="chip" onclick="quickAddPoop('其他')" style="font-size:15px">+ 💩 1次 (其他)</div><div class="chip" style="background:#ffebee;color:#f44336;border-color:#ffcdd2" onclick="resetPoop()">重置歸零</div></div><div class="input-group"><label>目前總次數</label><input type="number" id="input-poop-count" class="input-control" value="0"></div><div class="input-group"><label>狀況</label><div class="radio-group"><label class="radio-label"><input type="radio" name="poop-status" value="正常" checked>正常</label><label class="radio-label"><input type="radio" name="poop-status" value="其他">其他</label></div></div><div class="input-group"><label>備註</label><input type="text" id="input-poop-note" class="input-control"></div><div class="modal-actions"><button class="btn-outline" onclick="closeModal('poopModal')">取消</button><button class="btn-green btn-fill" onclick="savePoop()">儲存</button></div></div></div>
 
@@ -166,7 +167,7 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 <div style="border-top:1px dashed var(--border-color);margin:15px 0"></div>
 <div class="target-setting-row"><label>🏁 初始體重</label><input type="number" id="setting-initial-weight" class="input-control" step=".1"></div><div class="target-setting-row"><label>🏁 初始體脂</label><input type="number" id="setting-initial-fat" class="input-control" step=".1"></div><div style="border-top:1px dashed var(--border-color);margin:15px 0"></div>
 <div class="target-setting-row"><label>🎯 目標體重</label><input type="number" id="setting-weight" class="input-control" step=".1"></div><div class="target-setting-row" id="setting-water-row" style="display:none"><label>💧 每日水量（自動計算）</label><input type="number" id="setting-water" class="input-control" step="100" readonly></div><div class="target-setting-row"><label>🍚 一般日主食</label><input type="number" id="setting-carbs" class="input-control" step=".5"></div><div class="target-setting-row"><label>🥩 一般日肉類</label><input type="number" id="setting-meat" class="input-control" step=".5"></div><div class="target-setting-row"><label>🍎 一般日水果</label><input type="number" id="setting-fruit" class="input-control" step="1"></div><div class="target-setting-row"><label>🥬 每日蔬菜</label><input type="number" id="setting-veg" class="input-control" step="1"></div>
-<div class="target-setting-row" style="justify-content:flex-start;align-items:flex-start;margin-top:12px"><label style="flex:1"><input type="checkbox" id="setting-auto-weight-adjust"> 依「14天節點」自動檢視主食／肉類／水果</label></div><div class="small-note" style="margin-top:4px">預設關閉。開啟後以當下7日平均體重建立第一節點，觀察14天；第一次若下降至少0.5 kg且期間沒有從最低7日平均回彈超過0.5 kg，增加1主、1肉、1果。之後不會每下降0.5 kg就加份量：需再下降至少4 kg至下一個體重門檻，且新一輪14天仍下降至少0.5 kg、期間沒有回彈超過0.5 kg，才可再次增加。若回彈超過0.5 kg，維持份數並提醒。飲水量仍獨立使用7日平均體重×31～34 ml；男女節點分開儲存。</div>
+<div class="target-setting-row" style="justify-content:flex-start;align-items:flex-start;margin-top:12px"><label style="flex:1"><input type="checkbox" id="setting-auto-weight-adjust"> 依「14天節點」自動檢視主食／肉類／水果</label></div><div class="small-note" style="margin-top:4px">預設關閉。開啟後以當下7日平均體重建立第一節點，觀察14天；第一次若下降至少0.5 kg且期間沒有從最低7日平均回彈超過0.5 kg，增加1主、1肉、1果。之後不會每下降0.5 kg就加份量：需再下降至少4 kg至下一個體重門檻，且新一輪14天仍下降至少0.5 kg、期間沒有回彈超過0.5 kg，才可再次增加。若回彈超過0.5 kg，維持份數並提醒。飲水量仍獨立使用7日平均體重×31～34 ml；男女節點分開儲存。手動修改的份數會立即生效，節點加成另外疊加在上面。</div>
 <div class="modal-actions"><button class="btn-outline" onclick="closeModal('settingsModal')">取消</button><button class="btn-green btn-fill" onclick="saveSettings()">儲存目標</button></div></div></div>
 
 <div class="modal-overlay" id="cheatSheetModal"><div class="modal-content" style="max-width:480px"><button class="close-btn" onclick="closeModal('cheatSheetModal')">×</button><div class="modal-title">營養師食物克數表 v1.3</div><div class="tab-header" style="overflow-x:auto;white-space:nowrap;padding-bottom:5px"><div class="tab-btn active" onclick="switchTab('tab-carbs',this)">主食類</div><div class="tab-btn" onclick="switchTab('tab-meat',this)">肉類與奶</div><div class="tab-btn" onclick="switchTab('tab-fruit',this)">水果類</div><div class="tab-btn" style="color:#d68910" onclick="switchTab('tab-rules',this)">⚠️最新規則</div></div>
@@ -193,7 +194,10 @@ let customChips=JSON.parse(localStorage.getItem('health_custom_chips'))||[];
 
 function storageKey(date){return `health_record_${activeProfile}_${date}`}
 function legacyStorageKey(date){return `health_record_${date}`}
-function switchProfile(profile){if(profile===activeProfile){localStorage.setItem('health_active_profile',profile);return;}localStorage.setItem(`health_targets_${activeProfile}`,JSON.stringify(targets));activeProfile=profile;localStorage.setItem('health_active_profile',activeProfile);targets={...defaultTargets[activeProfile],...(JSON.parse(localStorage.getItem(`health_targets_${activeProfile}`))||{})};userProfile=JSON.parse(localStorage.getItem(`health_user_profile_${activeProfile}`))||{gender:activeProfile,age:'',height:'',weight:activeProfile==='M'?72.6:49.7};document.getElementById('active-profile-select').value=activeProfile;loadDataForDate(currentDateStr);updateUI();}
+function switchProfile(profile){if(profile===activeProfile){localStorage.setItem('health_active_profile',profile);return;}localStorage.setItem(`health_targets_${activeProfile}`,JSON.stringify(targets));activeProfile=profile;invalidateHistory();localStorage.setItem('health_active_profile',activeProfile);targets={...defaultTargets[activeProfile],...(JSON.parse(localStorage.getItem(`health_targets_${activeProfile}`))||{})};userProfile=JSON.parse(localStorage.getItem(`health_user_profile_${activeProfile}`))||{gender:activeProfile,age:'',height:'',weight:activeProfile==='M'?72.6:49.7};document.getElementById('active-profile-select').value=activeProfile;loadDataForDate(currentDateStr);updateUI();}
+function r2(n){return Math.round((Number(n)||0)*100)/100}
+let historyCache=null;function invalidateHistory(){historyCache=null}
+function readRecord(ds){try{return JSON.parse(localStorage.getItem(storageKey(ds))||'null')}catch(e){return null}}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function formatNumber(v){const n=Number(v);return Number.isInteger(n)?n:n.toFixed(1)}
 function openModal(id){document.getElementById(id).style.display='flex'}
@@ -202,8 +206,8 @@ window.onclick=e=>{if(e.target.classList.contains('modal-overlay'))e.target.styl
 
 function emptyMeals(){return{morning:{c:0,m:0,f:0,v:0},noon:{c:0,m:0,f:0,v:0},night:{c:0,m:0,f:0,v:0},snack:{c:0,m:0,f:0,v:0}}}
 function loadDataForDate(dateStr){
-const def={advice:'',weight:'',fat:'',waterEntries:[],poop:{count:0,status:'正常',note:''},sports:[],dietConsumed:{carbs:0,meat:0,fruit:0,veg:0},travelMode:'normal',friedMeat:0,friedUsed:false,friedDayCount:0,cookingMethods:[],breakfastMeat:0,lastMealTime:null,lastMealType:null};
-let raw=localStorage.getItem(storageKey(dateStr));if(!raw&&activeProfile==='M'){raw=localStorage.getItem(legacyStorageKey(dateStr))||localStorage.getItem(`health_v3_${dateStr}`);if(raw)localStorage.setItem(storageKey(dateStr),raw)}
+const def={advice:'',weight:'',fat:'',waterEntries:[],poop:{count:0,status:'正常',note:''},sports:[],dietConsumed:{carbs:0,meat:0,fruit:0,veg:0},travelMode:'normal',friedMeat:0,friedUsed:false,friedDayCount:0,cookingMethods:[],breakfastMeat:0,lastMealTime:null,lastMealType:null,dietEntries:[]};
+let raw=localStorage.getItem(storageKey(dateStr));if(!raw&&activeProfile==='M'){raw=localStorage.getItem(legacyStorageKey(dateStr))||localStorage.getItem(`health_v3_${dateStr}`);if(raw){localStorage.setItem(storageKey(dateStr),raw);invalidateHistory()}}
 dailyData=raw?JSON.parse(raw):JSON.parse(JSON.stringify(def));
 if(!dailyData.dietConsumed)dailyData.dietConsumed={carbs:0,meat:0,fruit:0,veg:0};
 if(!dailyData.meals){
@@ -215,66 +219,82 @@ if(!dailyData.travelMode)dailyData.travelMode='normal';
 if(dailyData.friedMeat===undefined)dailyData.friedMeat=0;
 if(dailyData.friedUsed===undefined)dailyData.friedUsed=false;
 if(!dailyData.cookingMethods)dailyData.cookingMethods=[];
+if(!dailyData.dietEntries)dailyData.dietEntries=[];
 if(dailyData.breakfastMeat===undefined)dailyData.breakfastMeat=Number(dailyData.meals?.morning?.m)||0;
 }
 function changeDate(s){if(!s)return;currentDateStr=s;const d=new Date(`${s}T00:00:00`);document.getElementById('display-date-day').innerText=` 星期${days[d.getDay()]}`;loadDataForDate(s);updateUI()}
 
-function saveData(){localStorage.setItem(storageKey(currentDateStr),JSON.stringify(dailyData));updateUI()}
+function saveData(){localStorage.setItem(storageKey(currentDateStr),JSON.stringify(dailyData));invalidateHistory();updateUI()}
 function getWeightAverage7ForDate(dateStr,rows=getAllHistory(),fallbackWeight=''){const cutoff=new Date(`${dateStr}T00:00:00`);cutoff.setDate(cutoff.getDate()-6);const minDate=formatDate(cutoff);const vals=rows.filter(x=>x.date>=minDate&&x.date<=dateStr&&x.data.weight!==''&&Number(x.data.weight)>0).map(x=>Number(x.data.weight));if(!vals.length&&fallbackWeight!==''&&Number(fallbackWeight)>0)vals.push(Number(fallbackWeight));return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:(activeProfile==='M'?72.6:49.7)}
 function getWeightAverage7(){return getWeightAverage7ForDate(currentDateStr,getAllHistory(),dailyData.weight)}
 function getWeightNodeKey(){return `health_weight_node_${activeProfile}`}
 function getWeightNode(){let node;try{node=JSON.parse(localStorage.getItem(getWeightNodeKey())||'null')}catch(e){}return node}
 function getAverageForDateIfRecorded(dateStr){const rows=getAllHistory(),cutoff=new Date(`${dateStr}T00:00:00`);cutoff.setDate(cutoff.getDate()-6);const minDate=formatDate(cutoff);const vals=rows.filter(x=>x.date>=minDate&&x.date<=dateStr&&x.data.weight!==''&&Number(x.data.weight)>0).map(x=>Number(x.data.weight));return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null}
-function evaluateWeightNode(){
- const avg=getWeightAverage7(),key=getWeightNodeKey();let node=getWeightNode();
- if(!node||!node.date||!Number.isFinite(Number(node.weight))){
-   node={date:currentDateStr,weight:avg,lowest:avg,baseWeight:avg,baseCarbs:Number(targets.carbs),baseMeat:Number(targets.meat),baseFruit:Number(targets.fruit),activeCarbs:Number(targets.carbs),activeMeat:Number(targets.meat),activeFruit:Number(targets.fruit),firstIncreaseDone:false,nextIncreaseAtWeight:null,lastReviewDate:'',notice:'第一節點已建立：開始14天觀察。首次達標後增加份量；之後需再下降至少4 kg才會重新評估是否增加。'};
+function migrateNode(node){
+ if(!node||typeof node!=='object')return null;
+ if(node.bonusCarbs===undefined){
+   const d=(x,y)=>Math.max(0,(Number(x)||0)-(Number(y)||0));
+   node.bonusCarbs=node.activeCarbs!==undefined?d(node.activeCarbs,node.baseCarbs):0;
+   node.bonusMeat=node.activeMeat!==undefined?d(node.activeMeat,node.baseMeat):0;
+   node.bonusFruit=node.activeFruit!==undefined?d(node.activeFruit,node.baseFruit):0;
  }
- // Backward compatibility with nodes saved by v1.5.0
- if(node.firstIncreaseDone===undefined)node.firstIncreaseDone=Number(node.activeCarbs)>Number(node.baseCarbs)||Number(node.activeMeat)>Number(node.baseMeat)||Number(node.activeFruit)>Number(node.baseFruit);
- if(node.baseWeight===undefined)node.baseWeight=Number(node.weight);
+ if(node.firstIncreaseDone===undefined)node.firstIncreaseDone=(node.bonusCarbs+node.bonusMeat+node.bonusFruit)>0;
  if(node.nextIncreaseAtWeight===undefined)node.nextIncreaseAtWeight=node.firstIncreaseDone?Number(node.weight)-4:null;
- const start=new Date(`${node.date}T00:00:00`),today=new Date(`${currentDateStr}T00:00:00`);const elapsed=Math.floor((today-start)/86400000);
+ return node;
+}
+// v1.5.4：節點只在「真實今天」評估；翻閱其他日期時唯讀，避免選到未來日期誤觸加份量。
+function evaluateWeightNode(){
+ const key=getWeightNodeKey(),isToday=currentDateStr===realTodayStr;let node=migrateNode(getWeightNode());
+ if(!node||!node.date||!Number.isFinite(Number(node.weight))){
+   if(!isToday)return null;
+   const avg=getWeightAverage7();
+   node={date:realTodayStr,weight:avg,lowest:avg,bonusCarbs:0,bonusMeat:0,bonusFruit:0,firstIncreaseDone:false,nextIncreaseAtWeight:null,notice:'第一節點已建立：開始14天觀察。首次達標後增加份量；之後需再下降至少4 kg才會重新評估是否增加。'};
+   localStorage.setItem(key,JSON.stringify(node));return node;
+ }
+ if(!isToday)return node;
+ const avg=getWeightAverage7();
+ const start=new Date(`${node.date}T00:00:00`),today=new Date(`${realTodayStr}T00:00:00`);const elapsed=Math.floor((today-start)/86400000);
+ if(elapsed<0){node.date=realTodayStr;node.weight=avg;node.lowest=avg;localStorage.setItem(key,JSON.stringify(node));return node}
  let lowest=Number(node.lowest??node.weight);
- for(let i=0;i<=Math.max(0,elapsed);i++){const d=new Date(start);d.setDate(d.getDate()+i);const recordedAvg=getAverageForDateIfRecorded(formatDate(d));if(recordedAvg!==null)lowest=Math.min(lowest,recordedAvg)}
+ for(let i=0;i<=elapsed;i++){const d=new Date(start);d.setDate(d.getDate()+i);const ra=getAverageForDateIfRecorded(formatDate(d));if(ra!==null)lowest=Math.min(lowest,ra)}
  node.lowest=lowest;
- if(localStorage.getItem(`health_auto_weight_adjust_${activeProfile}`)==='true'&&elapsed>=14&&node.lastReviewDate!==currentDateStr){
-   const rebound=avg-Number(node.lowest??node.weight)>0.5;
-   const delta=avg-Number(node.weight);
-   const gateReached=node.firstIncreaseDone && avg<=Number(node.nextIncreaseAtWeight);
+ if(elapsed>=14){
+   const rebound=avg-lowest>0.5,delta=avg-Number(node.weight);
+   const gateReached=node.firstIncreaseDone&&avg<=Number(node.nextIncreaseAtWeight);
    if(rebound){
-     node.notice=`⚠️ 14天檢視：期間最低7日平均 ${Number(node.lowest).toFixed(2)} kg，目前 ${avg.toFixed(2)} kg，回彈超過0.5 kg。維持目前份數，不自動更改；重新觀察14天。`;
-   }else if(delta<=-0.5 && (!node.firstIncreaseDone || gateReached)){
-     node.activeCarbs=Number(node.activeCarbs)+1;node.activeMeat=Number(node.activeMeat)+1;node.activeFruit=Number(node.activeFruit)+1;
-     node.firstIncreaseDone=true;node.nextIncreaseAtWeight=avg-4;
-     node.notice=`✅ 14天檢視：7日平均下降 ${Math.abs(delta).toFixed(2)} kg，且期間沒有超過0.5 kg回彈；已增加1主、1肉、1果。下一次增加門檻為7日平均體重 ${Number(node.nextIncreaseAtWeight).toFixed(2)} kg（比本次節點再低4 kg），期間份數維持不變。`;
-   }else if(node.firstIncreaseDone && !gateReached){
-     node.notice=`ℹ️ 14天檢視：本輪體重變化 ${delta.toFixed(2)} kg。已完成首次代謝加成；為避免每下降0.5 kg就重複加份量，需先達到 ${Number(node.nextIncreaseAtWeight).toFixed(2)} kg（比上次加份量節點低4 kg），且14天下降至少0.5 kg、期間無超過0.5 kg回彈，才會再次增加。份數維持不變。`;
+     node.notice=`⚠️ 14天檢視：期間最低7日平均 ${lowest.toFixed(2)} kg，目前 ${avg.toFixed(2)} kg，回彈超過0.5 kg。維持目前份數；重新觀察14天。`;
+   }else if(delta<=-0.5&&(!node.firstIncreaseDone||gateReached)){
+     node.bonusCarbs+=1;node.bonusMeat+=1;node.bonusFruit+=1;node.firstIncreaseDone=true;node.nextIncreaseAtWeight=avg-4;
+     node.notice=`✅ 14天檢視：7日平均下降 ${Math.abs(delta).toFixed(2)} kg，期間無超過0.5 kg回彈；已增加1主、1肉、1果。下一次增加門檻為 ${Number(node.nextIncreaseAtWeight).toFixed(2)} kg。`;
+   }else if(node.firstIncreaseDone&&!gateReached){
+     node.notice=`ℹ️ 14天檢視：本輪變化 ${delta.toFixed(2)} kg。需先達到 ${Number(node.nextIncreaseAtWeight).toFixed(2)} kg，且14天下降至少0.5 kg、無超過0.5 kg回彈，才會再次增加。份數維持不變。`;
    }else{
      node.notice=`ℹ️ 14天檢視：相較本輪節點 ${Number(node.weight).toFixed(2)} kg，下降未達0.5 kg；維持目前份數，重新觀察14天。`;
    }
-   node.date=currentDateStr;node.weight=avg;node.lowest=avg;node.lastReviewDate='';
+   node.date=realTodayStr;node.weight=avg;node.lowest=avg;
  }
  localStorage.setItem(key,JSON.stringify(node));return node;
 }
-function getDynamicTargets(){const avg=getWeightAverage7(),baseCarbs=Number(targets.carbs),baseMeat=Number(targets.meat),baseFruit=Number(targets.fruit);if(localStorage.getItem(`health_auto_weight_adjust_${activeProfile}`)!=='true')return{carbs:baseCarbs,meat:baseMeat,fruit:baseFruit,reason:`依手動設定目標；飲食節點自動調整關閉。7日平均 ${avg.toFixed(2)} kg 僅用於飲水計算`};const node=evaluateWeightNode();return{carbs:Number(node.activeCarbs??baseCarbs),meat:Number(node.activeMeat??baseMeat),fruit:Number(node.activeFruit??baseFruit),reason:`14天節點追蹤｜本輪節點 ${Number(node.weight).toFixed(2)} kg（${node.date}）｜${node.firstIncreaseDone?'下一次加份量門檻 '+Number(node.nextIncreaseAtWeight).toFixed(2)+' kg（再下降4 kg）':'首次14天檢視，下降達0.5 kg且無回彈即可增加'}｜目前7日平均 ${avg.toFixed(2)} kg｜${node.notice||'觀察期內維持目前份數'}`}}
+function getDynamicTargets(){const avg=getWeightAverage7(),baseCarbs=Number(targets.carbs),baseMeat=Number(targets.meat),baseFruit=Number(targets.fruit);if(localStorage.getItem(`health_auto_weight_adjust_${activeProfile}`)!=='true')return{carbs:baseCarbs,meat:baseMeat,fruit:baseFruit,reason:`依手動設定目標；飲食節點自動調整關閉。7日平均 ${avg.toFixed(2)} kg 僅用於飲水計算`};const node=evaluateWeightNode();if(!node)return{carbs:baseCarbs,meat:baseMeat,fruit:baseFruit,reason:'節點尚未建立；回到今天的日期即會自動建立'};const bonus=`節點加成 +${node.bonusCarbs}主 +${node.bonusMeat}肉 +${node.bonusFruit}果`;return{carbs:baseCarbs+node.bonusCarbs,meat:baseMeat+node.bonusMeat,fruit:baseFruit+node.bonusFruit,reason:`14天節點追蹤｜本輪節點 ${Number(node.weight).toFixed(2)} kg（${node.date}）｜${bonus}｜${node.firstIncreaseDone?'下一次門檻 '+Number(node.nextIncreaseAtWeight).toFixed(2)+' kg':'首次14天檢視，下降達0.5 kg且無回彈即可增加'}｜目前7日平均 ${avg.toFixed(2)} kg｜${node.notice||'觀察期內維持目前份數'}${currentDateStr!==realTodayStr?'｜（查看其他日期：節點唯讀）':''}`}}
 function getTravelTargets(){switch(dailyData.travelMode){case'Indoor':case'indoor':return{carbs:12,meat:8,fruit:2};case'halfOutdoor':return{carbs:13,meat:9,fruit:2};case'walking':return{carbs:14,meat:10,fruit:2};default:return getDynamicTargets()}}
 function calculateDiet(){const tHours=dailyData.sports.reduce((s,x)=>s+Number(x.hours||0),0),t=getTravelTargets();let boostCarbs=0,boostMeat=0;if(dailyData.travelMode==='normal'){dailyData.sports.forEach(x=>{if(x.strengthServing){boostCarbs+=Number(x.hours||0);boostMeat+=Number(x.hours||0)*2}})}const targetFruit=t.fruit;return{remainCarbs:t.carbs+boostCarbs-Number(dailyData.dietConsumed.carbs),remainMeat:t.meat+boostMeat-Number(dailyData.dietConsumed.meat),remainFruit:targetFruit-Number(dailyData.dietConsumed.fruit),remainVeg:Number(targets.veg)-Number(dailyData.dietConsumed.veg),totalHours:tHours,boostCarbs,boostMeat,targetCarbs:t.carbs+boostCarbs,targetMeat:t.meat+boostMeat,targetFruit,weightAverage:getWeightAverage7(),targetReason:t.reason||''}}
 function calculateWater(){const h=dailyData.sports.reduce((s,x)=>s+Number(x.hours||0),0),avg=getWeightAverage7(),min=Math.round(avg*31),max=Math.round(avg*34);return{currentWaterTarget:max,minWaterTarget:min,maxWaterTarget:max,weightAverage:avg,adviceVal:0,totalHours:h,baseWater:min}}
-function updateDietBox(k,v){const box=document.getElementById(`box-${k}`),lbl=document.getElementById(`lbl-${k}`),val=document.getElementById(`val-${k}`);box.className='diet-item-modern';if(v>0){box.classList.add('status-remain');lbl.innerText='剩餘';val.innerText=formatNumber(v)}else if(v<0){box.classList.add('status-exceed');lbl.innerText='超過';val.innerText=formatNumber(Math.abs(v))}else{box.classList.add('status-zero');lbl.innerText='剩餘';val.innerText='0'}}
+function updateDietBox(k,v){v=r2(v);const box=document.getElementById(`box-${k}`),lbl=document.getElementById(`lbl-${k}`),val=document.getElementById(`val-${k}`);box.className='diet-item-modern';if(v>0){box.classList.add('status-remain');lbl.innerText='剩餘';val.innerText=formatNumber(v)}else if(v<0){box.classList.add('status-exceed');lbl.innerText='超過';val.innerText=formatNumber(Math.abs(v))}else{box.classList.add('status-zero');lbl.innerText='剩餘';val.innerText='0'}}
 
 function getPreviousDayRecord(dateStr){const d=new Date(`${dateStr}T00:00:00`);d.setDate(d.getDate()-1);const raw=localStorage.getItem(storageKey(formatDate(d)));if(!raw)return null;try{return JSON.parse(raw)}catch(e){return null}}
 function analyzeDietRisk(){
 const diet=calculateDiet(),w=[];const meatOver=Number(dailyData.dietConsumed.meat)-Number(diet.targetMeat);
 if(meatOver>=3)w.push({level:'danger',title:'🥩 肉類明顯超量',text:`今日肉類已超過目標約 ${formatNumber(meatOver)} 份。營養師目前特別提醒：肉類超量約 3 份時，需要優先檢查。`});
 if(dailyData.travelMode!=='normal'&&Number(dailyData.breakfastMeat||0)>2)w.push({level:'warning',title:'🍳 早餐肉類偏多',text:`出國期間早餐肉類建議不超過 2 份，今天早餐已記錄 ${formatNumber(dailyData.breakfastMeat)} 份。`});
-if(dailyData.travelMode!=='normal'&&Number(dailyData.friedMeat||0)>2)w.push({level:'danger',title:'🍟 炸物超過上限',text:'出國期間炸物一天最多代替2肉，今天已超過營養師設定上限。'});
+if(Number(dailyData.friedMeat||0)>2)w.push({level:'danger',title:'🍟 炸物超過上限',text:`炸物一天最多代替2肉，今天已累計 ${formatNumber(dailyData.friedMeat)} 肉。`});
+if(dailyData.travelMode!=='normal'){const fd=countTravelFriedDays();if(fd>2)w.push({level:'danger',title:'🍟 出國炸物天數超過',text:`這趟出國已有 ${fd} 天吃炸物，營養師上限為 2 天。`})}
 const prev=getPreviousDayRecord(currentDateStr);
 if(prev&&dailyData.fat!==''&&prev.fat!==''){
 const fr=Number(dailyData.fat)-Number(prev.fat),wc=Number(dailyData.weight)-Number(prev.weight);
 if(fr>=.1&&Math.abs(wc)<=.2)w.push({level:'info',title:'📈 體脂上升、體重沒有明顯變化',text:`體脂較前一天 +${fr.toFixed(1)}%，但體重變化僅 ${wc>=0?'+':''}${wc.toFixed(1)} kg。先不要急著減少主食，優先檢查油脂偏高、澱粉突然降低或肉類超量。`})
 }
 return w}
+function countTravelFriedDays(){let n=0;const d=new Date(`${currentDateStr}T00:00:00`);for(let i=0;i<60;i++){const ds=formatDate(d),rec=ds===currentDateStr?dailyData:readRecord(ds);if(!rec||!rec.travelMode||rec.travelMode==='normal')break;if(Number(rec.friedMeat||0)>0)n++;d.setDate(d.getDate()-1)}return n}
 function renderDietRisk(){const p=document.getElementById('diet-risk-panel'),ws=analyzeDietRisk();if(!ws.length){p.style.display='none';p.innerHTML='';return}p.style.display='block';p.innerHTML=ws.map(w=>{let bg='#fff8e1',bd='#ffe082',c='#d68910';if(w.level==='danger'){bg='#ffebee';bd='#ffcdd2';c='#c62828'}if(w.level==='info'){bg='#e3f2fd';bd='#bbdefb';c='#1565c0'}return `<div class="risk-card" style="background:${bg};border:1px solid ${bd};color:${c}"><b>${w.title}</b><div>${w.text}</div></div>`}).join('')}
 function updateTravelModeUI(){const s=document.getElementById('travel-mode-select'),n=document.getElementById('travel-mode-note');if(!s)return;s.value=dailyData.travelMode||'normal';n.innerText={normal:'一般日：使用設定目標；運動會另外增加主食與肉類。',indoor:'整天室內：12主 / 8肉 / 2果。',halfOutdoor:'半戶外半室內：13主 / 9肉 / 2果。',walking:'整天走路：14主 / 10肉 / 2果。'}[dailyData.travelMode]||''}
 function changeTravelMode(v){dailyData.travelMode=v;saveData()}
@@ -291,7 +311,7 @@ document.getElementById('main-sport-hours').innerText=wi.totalHours;document.get
 const diet=calculateDiet();const avgNote=document.getElementById('weight-average-note');if(avgNote)avgNote.innerText=`📊 ${activeProfile==='M'?'男生':'女生'}版｜最近7日平均體重 ${diet.weightAverage.toFixed(2)} kg｜${diet.targetReason||'出國模式使用活動量目標'}`;document.getElementById('sport-extra-carbs').innerText=diet.boostCarbs;document.getElementById('sport-extra-meat').innerText=diet.boostMeat;document.getElementById('sport-diet-advice').style.display=diet.totalHours>0?'block':'none';const sportAdvice=document.querySelector('#sport-diet-advice div:last-child');if(sportAdvice)sportAdvice.innerText=`💡 僅勾選「重訓飲食加成」的運動會增加份數；每小時 +1主 +2肉。7日平均體重：${diet.weightAverage.toFixed(2)} kg。${diet.targetReason||''}`;
 ['carbs','meat','fruit','veg'].forEach(k=>updateDietBox(k,diet[`remain${k[0].toUpperCase()+k.slice(1)}`]));
 document.getElementById('main-poop').innerText=dailyData.poop.count>0?`${dailyData.poop.count}次 (${dailyData.poop.status})`:'尚未填寫';
-updateTravelModeUI();renderDietRisk()
+updateTravelModeUI();renderDietRisk();renderDietEntries()
 }
 
 function saveAdvice(){dailyData.advice=document.getElementById('input-advice').value;saveData();closeModal('adviceModal')}
@@ -326,7 +346,7 @@ function runDecoder(){
 const type=document.getElementById('decoder-type').value;const rh=n=>Math.round(n*2)/2;let c=0,m=0,f=0,log='';
 if(type==='rosong'){const kcal=Number(document.getElementById('dec-rosong-kcal').value)||0;if(kcal<=0)return alert('請輸入羅宋麵包熱量');const ratio=kcal/456;c=rh(4*ratio);m=rh(2*ratio);f=rh(.5*ratio);log=`[羅宋麵包 BOM]\n456 kcal = 4主 + 2肉 + 0.5果\n本次 ${kcal} kcal → ${c}主 + ${m}肉 + ${f}果`;document.getElementById('dec-rosong-kcal').value=''}
 else if(type==='pie'){const serving=Number(document.getElementById('dec-pie-serving').value)||0;if(serving<=0)return alert('請輸入派類份量');c=rh(.5*serving);m=rh(1*serving);f=rh(1*serving);log=`[派類 BOM]\n2指寬 × 食指高 = 0.5主 + 1肉 + 1果\n本次 ${serving}份 → ${c}主 + ${m}肉 + ${f}果`;document.getElementById('dec-pie-serving').value=1}
-else{const carbs=Number(document.getElementById('dec-carbs').value)||0,protein=Number(document.getElementById('dec-protein').value)||0,fat=Number(document.getElementById('dec-fat').value)||0,sugar=Number(document.getElementById('dec-sugar').value)||0;if(type==='dried_fruit'){f=rh(carbs/15);log=`[純果乾]\n🍎 水果：碳水 ${carbs}g ÷ 15 → ${f}果`}else if(type==='snack_sugar'){c=rh(carbs/15);m=rh(fat/7);f=rh(sugar/15);log=`[含糖零食]\n🍚 主食 ${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else if(type==='snack_protein'){c=rh(carbs/15);m=rh((protein+fat)/7);f=rh(sugar/15);log=`[高蛋白零食]\n🍚 主食 ${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else if(type==='pastry_general'){c=rh(carbs/15);m=rh(fat/7);f=rh(sugar/15);log=`[一般糕餅]\n🍚 主食 ${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else{c=rh(carbs/15);m=rh(fat/10);f=rh(sugar/15);log=`[蛋黃酥／月餅]\n🍚 主食 ${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}}
+else{const carbs=Number(document.getElementById('dec-carbs').value)||0,protein=Number(document.getElementById('dec-protein').value)||0,fat=Number(document.getElementById('dec-fat').value)||0,sugar=Number(document.getElementById('dec-sugar').value)||0;if(sugar>carbs&&type!=='dried_fruit')return alert('糖不應大於總碳水，請確認營養標示');const starch=Math.max(0,carbs-sugar);/* v1.5.4：總碳水已包含糖，糖改算水果後要從主食扣掉，避免重複計算 */if(type==='dried_fruit'){f=rh(carbs/15);log=`[純果乾]\n🍎 水果：碳水 ${carbs}g ÷ 15 → ${f}果`}else if(type==='snack_sugar'){c=rh(starch/15);m=rh(fat/7);f=rh(sugar/15);log=`[含糖零食]\n🍚 主食（碳水−糖）${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else if(type==='snack_protein'){c=rh(starch/15);m=rh((protein+fat)/7);f=rh(sugar/15);log=`[高蛋白零食]\n🍚 主食（碳水−糖）${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else if(type==='pastry_general'){c=rh(starch/15);m=rh(fat/7);f=rh(sugar/15);log=`[一般糕餅]\n🍚 主食（碳水−糖）${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}else{c=rh(starch/15);m=rh(fat/10);f=rh(sugar/15);log=`[蛋黃酥／月餅]\n🍚 主食（碳水−糖）${c}主\n🥩 肉類 ${m}肉\n🍎 水果 ${f}果（糖15g=1果）`}}
 if(c)document.getElementById('eat-carbs').value=(Number(document.getElementById('eat-carbs').value)||0)+c;if(m)document.getElementById('eat-meat').value=(Number(document.getElementById('eat-meat').value)||0)+m;if(f)document.getElementById('eat-fruit').value=(Number(document.getElementById('eat-fruit').value)||0)+f;alert(`BOM 運算完成！\n--------------------\n${log}`);['dec-carbs','dec-protein','dec-fat','dec-sugar'].forEach(id=>document.getElementById(id).value='')}
 function openDietModal(){
 const now=new Date();let meal='morning',hint='';
@@ -336,23 +356,26 @@ document.getElementById(`meal-${meal}`).checked=true;document.getElementById('me
 document.getElementById('eat-fried').checked=false;document.getElementById('cooking-method').value='';openModal('dietModal')
 }
 function quickAddDiet(c,m,f,v){document.getElementById('eat-carbs').value=Number(document.getElementById('eat-carbs').value||0)+c;document.getElementById('eat-meat').value=Number(document.getElementById('eat-meat').value||0)+m;document.getElementById('eat-fruit').value=Number(document.getElementById('eat-fruit').value||0)+f;document.getElementById('eat-veg').value=Number(document.getElementById('eat-veg').value||0)+v}
+function newEntryId(){return Date.now()*1000+Math.floor(Math.random()*1000)}
+function applyDietDelta(meal,c,m,f,v,sign){if(!dailyData.meals)dailyData.meals=emptyMeals();const q=dailyData.meals[meal];q.c=r2(q.c+sign*c);q.m=r2(q.m+sign*m);q.f=r2(q.f+sign*f);q.v=r2(q.v+sign*v);const d=dailyData.dietConsumed;d.carbs=r2(d.carbs+sign*c);d.meat=r2(d.meat+sign*m);d.fruit=r2(d.fruit+sign*f);d.veg=r2(d.veg+sign*v);if(meal==='morning')dailyData.breakfastMeat=r2(Math.max(0,Number(dailyData.breakfastMeat||0)+sign*m))}
+function deleteDietEntry(id){const list=dailyData.dietEntries||[],i=list.findIndex(e=>e.id===id);if(i<0)return;const e=list[i];if(!confirm('確定刪除這筆飲食紀錄？'))return;applyDietDelta(e.meal,e.c,e.m,e.f,e.v,-1);if(e.fried){dailyData.friedMeat=r2(Math.max(0,Number(dailyData.friedMeat||0)-e.m));dailyData.friedUsed=dailyData.friedMeat>0}if(e.method){const k=dailyData.cookingMethods.indexOf(e.method);if(k>=0)dailyData.cookingMethods.splice(k,1)}list.splice(i,1);const last=list[list.length-1];dailyData.lastMealTime=last?last.time:null;dailyData.lastMealType=last?last.meal:null;saveData()}
+function renderDietEntries(){const box=document.getElementById('diet-entry-list');if(!box)return;const list=dailyData.dietEntries||[];if(!list.length){box.innerHTML='';return}const names={morning:'早餐',noon:'午餐',night:'晚餐',snack:'點心'};box.innerHTML='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">📝 今日已記錄（可單筆刪除）</div>'+list.map(e=>{const t=new Date(e.time),hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;const parts=[['主',e.c],['肉',e.m],['果',e.f],['菜',e.v]].filter(p=>Number(p[1])).map(p=>`${formatNumber(p[1])}${p[0]}`).join(' ');return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-color);padding:8px 12px;border-radius:8px;margin-bottom:5px;font-size:13px"><span>${hm} ${names[e.meal]||''}｜${parts||'0'}${e.fried?' 🍟':''}${e.label?' （'+escapeHTML(e.label)+'）':''}</span><button onclick="deleteDietEntry(${e.id})" style="background:none;border:none;color:red;cursor:pointer;font-size:16px">🗑</button></div>`}).join('')}
 function saveDiet(){
 const meal=document.querySelector('input[name="meal-type"]:checked').value;if(!dailyData.meals)dailyData.meals=emptyMeals();
 const c=Number(document.getElementById('eat-carbs').value)||0,m=Number(document.getElementById('eat-meat').value)||0,f=Number(document.getElementById('eat-fruit').value)||0,v=Number(document.getElementById('eat-veg').value)||0;
 const fried=document.getElementById('eat-fried').checked,method=document.getElementById('cooking-method').value;
-if(fried&&m>2){if(!confirm('⚠️ 炸物一天最多代替2肉。你本次記錄超過2肉，仍要儲存嗎？'))return}
-if(dailyData.travelMode!=='normal'&&fried){const otherFried=Number(dailyData.friedMeat||0);if(otherFried+m>2&&!confirm(`⚠️ 出國期間炸物最多2肉，本日累計將達 ${formatNumber(otherFried+m)} 肉。仍要儲存嗎？`))return}
-dailyData.meals[meal].c+=c;dailyData.meals[meal].m+=m;dailyData.meals[meal].f+=f;dailyData.meals[meal].v+=v;
-dailyData.dietConsumed.carbs+=c;dailyData.dietConsumed.meat+=m;dailyData.dietConsumed.fruit+=f;dailyData.dietConsumed.veg+=v;
-if(meal==='morning')dailyData.breakfastMeat=Number(dailyData.breakfastMeat||0)+m;
-if(fried){dailyData.friedUsed=true;dailyData.friedMeat=Number(dailyData.friedMeat||0)+Math.min(m,2)}
+if(fried){const tot=Number(dailyData.friedMeat||0)+m;if(tot>2&&!confirm(`⚠️ 炸物一天最多代替2肉，本日累計將達 ${formatNumber(tot)} 肉。仍要儲存嗎？`))return;if(dailyData.travelMode!=='normal'&&!(Number(dailyData.friedMeat||0)>0)&&countTravelFriedDays()>=2&&!confirm('⚠️ 這趟出國已有 2 天吃炸物（上限 2 天），仍要儲存嗎？'))return}
+if(!c&&!m&&!f&&!v)return alert('請先輸入份數');
+applyDietDelta(meal,c,m,f,v,1);
+if(fried){dailyData.friedUsed=true;dailyData.friedMeat=r2(Number(dailyData.friedMeat||0)+m)}
+const nowIso=new Date().toISOString();dailyData.dietEntries.push({id:newEntryId(),time:nowIso,meal,c,m,f,v,fried,method});
 if(method)dailyData.cookingMethods.push(method);
-dailyData.lastMealTime=new Date().toISOString();dailyData.lastMealType=meal;
+dailyData.lastMealTime=nowIso;dailyData.lastMealType=meal;
 ['carbs','meat','fruit','veg'].forEach(k=>document.getElementById(`eat-${k}`).value=0);document.getElementById('eat-fried').checked=false;document.getElementById('cooking-method').value='';
 saveData();closeModal('dietModal')
 }
-function resetDietTarget(){if(confirm('確定將今日飲食紀錄全部歸零？')){dailyData.dietConsumed={carbs:0,meat:0,fruit:0,veg:0};dailyData.meals=emptyMeals();dailyData.lastMealTime=null;dailyData.lastMealType=null;dailyData.friedMeat=0;dailyData.friedUsed=false;dailyData.cookingMethods=[];dailyData.breakfastMeat=0;saveData();closeModal('dietModal')}}
-function deductMissedMorning(){if(confirm('10:30前未進食，補記早餐4主1肉？')){if(!dailyData.meals)dailyData.meals=emptyMeals();dailyData.meals.morning.c+=4;dailyData.meals.morning.m+=1;dailyData.dietConsumed.carbs+=4;dailyData.dietConsumed.meat+=1;dailyData.breakfastMeat=Number(dailyData.breakfastMeat||0)+1;saveData()}}
+function resetDietTarget(){if(confirm('確定將今日飲食紀錄全部歸零？')){dailyData.dietConsumed={carbs:0,meat:0,fruit:0,veg:0};dailyData.meals=emptyMeals();dailyData.lastMealTime=null;dailyData.lastMealType=null;dailyData.friedMeat=0;dailyData.friedUsed=false;dailyData.cookingMethods=[];dailyData.breakfastMeat=0;dailyData.dietEntries=[];saveData();closeModal('dietModal')}}
+function deductMissedMorning(){if(confirm('10:30前未進食，補記早餐4主1肉？')){applyDietDelta('morning',4,1,0,0,1);dailyData.dietEntries.push({id:newEntryId(),time:new Date().toISOString(),meal:'morning',c:4,m:1,f:0,v:0,fried:false,method:'',label:'10:30前未進食補記'});saveData()}}
 
 
 function renderChips(){
@@ -364,7 +387,7 @@ function deleteCustomChip(i){if(confirm('確定刪除？')){customChips.splice(i
 
 /* Settings */
 function openSettings(){document.getElementById('setting-auto-weight-adjust').checked=localStorage.getItem(`health_auto_weight_adjust_${activeProfile}`)==='true';document.getElementById('setting-weight').value=targets.targetWeight;document.getElementById('setting-initial-weight').value=targets.initialWeight||'';document.getElementById('setting-initial-fat').value=targets.initialFat||'';document.getElementById('setting-water').value=targets.water;document.getElementById('setting-carbs').value=targets.carbs;document.getElementById('setting-meat').value=targets.meat;document.getElementById('setting-fruit').value=targets.fruit;document.getElementById('setting-veg').value=targets.veg;document.getElementById('calc-gender').value=userProfile.gender||'M';document.getElementById('calc-age').value=userProfile.age||'';document.getElementById('calc-height').value=userProfile.height||'';document.getElementById('calc-weight').value=userProfile.weight||'';document.getElementById('calc-result-text').style.display='none';openModal('settingsModal')}
-function autoCalculateTargets(){const gender=document.getElementById('calc-gender').value,age=parseInt(document.getElementById('calc-age').value),height=parseInt(document.getElementById('calc-height').value),weight=parseFloat(document.getElementById('calc-weight').value);if(!age||!height||!weight)return alert('請填寫完整資料');userProfile={gender,age,height,weight};localStorage.setItem(`health_user_profile_${activeProfile}`,JSON.stringify(userProfile));const bmi=(weight/Math.pow(height/100,2)).toFixed(1);const bmr=gender==='M'?10*weight+6.25*height-5*age+5:10*weight+6.25*height-5*age-161;document.getElementById('setting-water').value=Math.ceil(weight*30/100)*100;document.getElementById('setting-carbs').value=Math.round(bmr*.5/70);let meat=Math.max(6,Math.round(weight/10));document.getElementById('setting-meat').value=meat;document.getElementById('setting-fruit').value=gender==='M'?3:2;document.getElementById('setting-veg').value=gender==='M'?2:1.5;document.getElementById('calc-result-text').innerHTML=`BMI ${bmi}｜基礎代謝 ${Math.round(bmr)} kcal<br>出國模式仍採營養師固定級距。`;document.getElementById('calc-result-text').style.display='block'}
+function autoCalculateTargets(){const gender=document.getElementById('calc-gender').value,age=parseInt(document.getElementById('calc-age').value),height=parseInt(document.getElementById('calc-height').value),weight=parseFloat(document.getElementById('calc-weight').value);if(!age||!height||!weight)return alert('請填寫完整資料');userProfile={gender,age,height,weight};localStorage.setItem(`health_user_profile_${activeProfile}`,JSON.stringify(userProfile));const bmi=(weight/Math.pow(height/100,2)).toFixed(1);const bmr=gender==='M'?10*weight+6.25*height-5*age+5:10*weight+6.25*height-5*age-161;document.getElementById('setting-water').value=Math.round(weight*34);document.getElementById('setting-carbs').value=Math.round(bmr*.5/70);let meat=Math.max(6,Math.round(weight/10));document.getElementById('setting-meat').value=meat;document.getElementById('setting-fruit').value=gender==='M'?3:2;document.getElementById('setting-veg').value=gender==='M'?2:1.5;document.getElementById('calc-result-text').innerHTML=`BMI ${bmi}｜基礎代謝 ${Math.round(bmr)} kcal<br>出國模式仍採營養師固定級距。`;document.getElementById('calc-result-text').style.display='block'}
 function saveSettings(){
   const readNumber=(id,label)=>{const el=document.getElementById(id),raw=String(el.value).trim();if(raw==='')return 0;const n=Number(raw);if(!Number.isFinite(n)||n<0){el.focus();throw new Error(`${label}請輸入 0 或正數`)}return n};
   try{
@@ -380,6 +403,8 @@ function saveSettings(){
     };
     if(nextTargets.targetWeight<=0)throw new Error('目標體重必須大於 0');
     targets=nextTargets;
+    const wasAuto=localStorage.getItem(`health_auto_weight_adjust_${activeProfile}`)==='true',nowAuto=document.getElementById('setting-auto-weight-adjust').checked;
+    if(nowAuto&&!wasAuto){const nd=migrateNode(getWeightNode());if(nd){const av=getWeightAverage7ForDate(realTodayStr);nd.date=realTodayStr;nd.weight=av;nd.lowest=av;nd.notice='重新開啟自動調整：保留原有加成，從今天重新觀察14天。';localStorage.setItem(getWeightNodeKey(),JSON.stringify(nd))}}
     localStorage.setItem(`health_auto_weight_adjust_${activeProfile}`,document.getElementById('setting-auto-weight-adjust').checked?'true':'false');
     const saved=JSON.stringify(targets);
     localStorage.setItem(`health_targets_${activeProfile}`,saved);
@@ -402,7 +427,7 @@ function saveSettings(){
 function checkTimeAlerts(){if(currentDateStr!==formatDate(new Date())){['alert-fruit','alert-veg','alert-water'].forEach(id=>document.getElementById(id).style.display='none');return}const h=new Date().getHours()+new Date().getMinutes()/60;document.getElementById('alert-fruit').style.display=h>=17.5?'block':'none';document.getElementById('alert-veg').style.display=h>=20?'block':'none';document.getElementById('alert-water').style.display=h>=21?'block':'none'}setInterval(checkTimeAlerts,60000)
 
 /* History */
-function getAllHistory(){const h=[],prefix=`health_record_${activeProfile}_`;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(prefix)){const date=k.slice(prefix.length);try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}else if(activeProfile==='M'&&/^health_record_\d{4}-\d{2}-\d{2}$/.test(k)){const date=k.replace('health_record_','');if(!h.some(x=>x.date===date))try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}}return h.sort((a,b)=>a.date.localeCompare(b.date))}
+function getAllHistory(){if(historyCache)return historyCache.slice();const h=[],prefix=`health_record_${activeProfile}_`;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(prefix)){const date=k.slice(prefix.length);try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}else if(activeProfile==='M'&&/^health_record_\d{4}-\d{2}-\d{2}$/.test(k)){const date=k.replace('health_record_','');if(!h.some(x=>x.date===date))try{h.push({date,data:JSON.parse(localStorage.getItem(k))})}catch(e){}}}h.sort((a,b)=>a.date.localeCompare(b.date));historyCache=h;return h.slice()}
 function showHistory(title,html,search=''){document.getElementById('history-title').innerText=title;document.getElementById('history-search-container').innerHTML=search;document.getElementById('history-list').innerHTML=html;openModal('historyModal')}
 function openDietHistory(){const all=getAllHistory().filter(x=>x.data.meals||x.data.dietConsumed);if(!all.length)return showHistory('🍽️ 飲食記錄管理','<p style="text-align:center;color:var(--text-light);padding:20px">無紀錄</p>');const html=all.reverse().map(x=>{const d=x.data,m=d.meals||emptyMeals();return `<details style="margin-bottom:10px;background:var(--bg-color);padding:10px;border-radius:12px;border:1px solid var(--border-color)"><summary style="font-weight:bold;cursor:pointer">📅 ${x.date} 飲食紀錄</summary><div style="margin-top:12px">${['morning','noon','night','snack'].map((k,i)=>{const title=['早餐','午餐','晚餐','點心/其他'][i],q=m[k]||{c:0,m:0,f:0,v:0};return `<div style="padding:10px;border:1px solid var(--border-color);border-radius:10px;margin-bottom:8px"><b>${title}</b><div style="font-size:13px;margin-top:6px">主食 ${formatNumber(q.c)}｜肉類 ${formatNumber(q.m)}｜水果 ${formatNumber(q.f)}｜蔬菜 ${formatNumber(q.v)}</div></div>`}).join('')}<div class="small-note">模式：${d.travelMode||'normal'}｜炸物 ${formatNumber(d.friedMeat||0)}肉</div></div></details>`}).join('');showHistory('🍽️ 飲食記錄管理',html)}
 let trendChartInstance=null,cachedTrendData=[];
@@ -415,10 +440,10 @@ function openSportHistory(){showHistory('🏃 運動歷史',getAllHistory().filt
 function switchTab(id,el){document.querySelectorAll('.tab-content,.tab-btn').forEach(n=>n.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active')}
 
 /* Backup */
-function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.3_${formatDate(new Date())}.json`;a.click()}
+function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.4_${formatDate(new Date())}.json`;a.click()}
 function importData(e){const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);let c=0;for(const k in d)if(k.startsWith('health_')){localStorage.setItem(k,d[k]);c++}alert(`✅ 成功還原 ${c} 筆資料！`);location.reload()}catch(err){alert('❌ 檔案格式錯誤！')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''}
 
-// v1.5.3: iOS Safari / 主畫面 PWA 返回前景與跨午夜同步
+// v1.5.4: iOS Safari / 主畫面 PWA 返回前景與跨午夜同步
 function syncCalendarDay(){
   const today=formatDate(new Date());
   if(today===realTodayStr)return;
