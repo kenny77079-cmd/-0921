@@ -10,116 +10,129 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>每日健康紀錄 v1.5.4</title>
+<title>每日健康紀錄 v1.5.5</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root{--primary-yellow:#f5a623;--primary-green:#00a65f;--bg-color:#f5f6f8;--card-bg:#fff;--text-dark:#333;--text-light:#888;--border-color:#eee;--diet-bg:#fffcf5}
-@media(prefers-color-scheme:dark){:root{--bg-color:#121212;--card-bg:#1e1e1e;--text-dark:#fff;--text-light:#aaa;--border-color:#333;--diet-bg:#2a2416}.modal-content{background:var(--card-bg)!important;color:var(--text-dark)}.input-control,.textarea-control,select.input-control{background:#121212!important;color:#fff!important;border-color:#444!important}.del-btn{background:#3a1a1a!important;color:#ff6b6b!important}.sport-option{background:#252525!important;border-color:#444!important;color:#fff!important}.chip{background:#1a3320!important;color:#81c784!important;border-color:#2e4d34!important}.cheat-list li{border-bottom-color:#444!important}.status-remain{background:#332915!important;color:#ffb74d!important}.status-exceed{background:#3a1616!important;color:#ff5252!important}.status-zero{color:#777!important}#date-selector{color-scheme:dark}}
+:root{--primary-yellow:#f5a623;--primary-green:#00a65f;--bg-color:#f5f6f8;--card-bg:#fff;--text-dark:#333;--text-light:#888;--border-color:#eee;--diet-bg:#fffcf5;--advice-bg:#f1f8e9;--advice-bd:#c8e6c9}
+@media(prefers-color-scheme:dark){:root{--bg-color:#121212;--card-bg:#1e1e1e;--text-dark:#fff;--text-light:#aaa;--border-color:#333;--diet-bg:#2a2416;--advice-bg:#1a2a1c;--advice-bd:#2e4d34}.modal-content{background:var(--card-bg)!important;color:var(--text-dark)}.input-control,.textarea-control,select.input-control{background:#121212!important;color:#fff!important;border-color:#444!important}.del-btn{background:#3a1a1a!important;color:#ff6b6b!important}.sport-option{background:#252525!important;border-color:#444!important;color:#fff!important}.chip{background:#1a3320!important;color:#81c784!important;border-color:#2e4d34!important}.cheat-list li{border-bottom-color:#444!important}.status-remain{background:#332915!important;color:#ffb74d!important}.status-exceed{background:#3a1616!important;color:#ff5252!important}.status-zero{color:#777!important}.d-bar{background:rgba(255,255,255,.12)!important}#date-selector{color-scheme:dark}}
 *{box-sizing:border-box;font-family:'PingFang TC','Microsoft JhengHei',sans-serif;margin:0;padding:0}
 body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-content:center}
-.app-container{width:100%;max-width:480px;padding:16px;padding-bottom:80px}
-.profile-header,.card{background:var(--card-bg);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.profile-header{display:flex;align-items:center}.avatar{width:60px;height:60px;background:#e0f2eb;color:var(--primary-green);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:24px;font-weight:bold;margin-right:15px}.profile-info{flex:1}.profile-name{font-size:18px;font-weight:bold;margin-bottom:4px}.profile-date{font-size:12px;color:var(--text-light);display:flex;align-items:center;gap:5px;margin-top:5px}#date-selector{border:1px solid var(--border-color);border-radius:6px;padding:4px 8px;background:var(--card-bg);color:var(--primary-green);font-weight:bold;font-family:inherit;font-size:14px;outline:none}
-.target-stats{display:flex;justify-content:space-between;text-align:center;margin-top:15px;border-top:1px solid var(--border-color);padding-top:15px}.stat-item{flex:1}.stat-label{font-size:12px;color:var(--text-light);margin-bottom:4px}.stat-val{font-size:16px;font-weight:bold}
-.card-header{display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:16px;margin-bottom:16px;border-bottom:1px solid var(--border-color);padding-bottom:10px}.card-header .view-record{font-size:14px;color:var(--primary-green);font-weight:normal;cursor:pointer}.card-content-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:15px;text-align:center}.val-display{font-size:28px;font-weight:bold}.val-unit{font-size:14px;color:var(--text-light);font-weight:normal}
-.btn-fill{width:100%;padding:12px;background:var(--primary-yellow);color:#fff;border:none;border-radius:25px;font-size:16px;font-weight:bold;cursor:pointer}.btn-fill:active{opacity:.8}.btn-green{background:var(--primary-green)}.btn-outline{background:transparent;color:var(--text-light);border:1px solid var(--border-color);border-radius:8px;cursor:pointer}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;justify-content:center;align-items:center;padding:20px}.modal-content{background:var(--card-bg);width:100%;max-width:420px;border-radius:16px;padding:20px;position:relative;animation:slideUp .3s ease-out;max-height:90vh;overflow-y:auto}@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}.modal-title{font-size:18px;font-weight:bold;margin-bottom:20px;text-align:center}.close-btn{position:absolute;right:20px;top:20px;background:none;border:none;font-size:20px;color:var(--text-light);cursor:pointer}.input-group{margin-bottom:15px}.input-group label{display:block;font-size:14px;color:var(--text-light);margin-bottom:5px}.input-control,.textarea-control{width:100%;padding:10px;border:1px solid var(--border-color);border-radius:8px;font-size:16px;outline:none;background:var(--card-bg);color:var(--text-dark)}.textarea-control{resize:vertical;min-height:100px;line-height:1.5}.modal-actions{display:flex;gap:10px;margin-top:20px}.modal-actions button{flex:1;padding:12px;border-radius:25px;font-size:16px;font-weight:bold;cursor:pointer;border:none}
-.water-list{max-height:250px;overflow-y:auto;margin-bottom:15px}.water-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}.water-row input{flex:1}.del-btn{background:#ffebee;color:#f44336;border:none;border-radius:8px;width:45px;height:45px;font-size:20px;display:flex;justify-content:center;align-items:center;cursor:pointer}
-.diet-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}.diet-item-modern{display:flex;justify-content:center;align-items:center;gap:8px;padding:12px 5px;border-radius:20px;font-weight:bold;transition:.3s}.d-title{font-size:16px}.d-label{font-size:13px;font-weight:normal;opacity:.9}.d-val{font-size:20px}.status-remain{background:#fff8e1;color:#f5a623}.status-exceed{background:#ffebee;color:#e53935}.status-zero{background:transparent;color:#b0b0b0}
-.radio-group{display:flex;gap:15px;margin-bottom:15px}.radio-label{display:flex;align-items:center;gap:5px;font-size:16px;cursor:pointer}.sport-option{padding:12px;border:1px solid var(--border-color);border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--card-bg)}
-.history-item{border-bottom:1px solid var(--border-color);padding:12px 0}.history-item:last-child{border-bottom:none}.history-date{font-weight:bold;color:var(--primary-yellow);margin-bottom:7px}.history-detail{font-size:14px;color:var(--text-light);line-height:1.8}.chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}.chip{padding:8px 12px;background:#e8f5e9;color:var(--primary-green);border:1px solid #c8e6c9;border-radius:16px;font-size:14px;cursor:pointer;font-weight:bold;display:flex;align-items:center;gap:6px}.delete-chip-btn{color:#f44336;font-size:16px;margin-left:4px;padding:0 4px;cursor:pointer;border-radius:50%;background:rgba(244,67,54,.1);line-height:1}.warning-text{font-size:12px;color:#f44336;margin-top:5px;font-weight:bold}.info-text{font-size:12px;color:var(--primary-green);line-height:1.6}.walk-group{display:flex;justify-content:space-between;margin-top:10px;background:var(--bg-color);padding:10px;border-radius:8px}.walk-label{display:flex;align-items:center;gap:4px;font-size:14px;cursor:pointer}
-.tab-header{display:flex;border-bottom:1px solid var(--border-color);margin-bottom:15px}.tab-btn{flex:1;padding:10px;text-align:center;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent}.tab-btn.active{color:var(--primary-yellow);border-bottom:2px solid var(--primary-yellow)}.tab-content{display:none;max-height:500px;overflow-y:auto;font-size:14px;padding-bottom:20px}.tab-content.active{display:block}.cheat-list{padding-left:0;margin-bottom:15px}.cheat-list li{margin-bottom:8px;border-bottom:1px dashed #eee;padding-bottom:8px;list-style:none;line-height:1.5}
-.progress-bg{height:10px;background:var(--border-color);border-radius:20px;overflow:hidden;margin:8px 0}.progress-bar{height:100%;background:var(--primary-green);border-radius:20px;transition:.3s}.target-setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}.target-setting-row label{flex:1;font-size:14px}.target-setting-row input{width:120px;text-align:center}.small-note{font-size:12px;color:var(--text-light);line-height:1.6}.setting-button{margin-top:10px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-color);background:transparent;color:var(--text-light)}.add-custom-chip-btn{width:100%;padding:8px;border:1px dashed var(--primary-green);color:var(--primary-green);background:transparent;border-radius:8px;cursor:pointer;font-size:14px;margin-bottom:15px}.auto-calc-box{background:var(--diet-bg);padding:12px;border-radius:12px;margin-bottom:15px;border:1px solid var(--primary-yellow)}
-.trend-card{background:var(--card-bg);border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid var(--border-color)}.trend-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:bold}.trend-progress-bg{height:8px;background:var(--border-color);border-radius:10px;overflow:hidden}.trend-progress-fill{height:100%;background:#2ecc71;border-radius:10px;transition:.5s}.trend-stats{display:flex;text-align:center;margin-top:15px;padding-top:15px;border-top:1px solid var(--border-color)}.trend-stat-item{flex:1;border-right:1px solid var(--border-color)}.trend-stat-item:last-child{border-right:none}.trend-stat-label{font-size:12px;color:var(--text-light)}.trend-stat-value{font-size:16px;font-weight:bold;margin-top:5px}.chart-tabs{display:flex;justify-content:space-around;margin-top:10px;margin-bottom:15px}.chart-tab{text-align:center;cursor:pointer;padding-bottom:8px;flex:1;border-bottom:3px solid transparent}.chart-tab.active-weight{border-bottom:3px solid #2ecc71}.chart-tab.active-fat{border-bottom:3px solid #3498db}.chart-val{font-size:22px;font-weight:bold;color:var(--text-dark);margin-top:2px}
-.risk-card{border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px;line-height:1.7}.travel-badge{display:inline-block;padding:3px 8px;border-radius:12px;background:#e8f5e9;color:var(--primary-green);font-size:12px;font-weight:bold}
+.app-container{width:100%;max-width:480px;padding:10px 10px 60px}
+.card{background:var(--card-bg);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-header{display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:15px;margin-bottom:8px}.card-header .view-record{font-size:13px;color:var(--primary-green);font-weight:normal;cursor:pointer}
+.stat-label{font-size:11px;color:var(--text-light)}
+.btn-fill{width:100%;padding:10px;background:var(--primary-yellow);color:#fff;border:none;border-radius:22px;font-size:15px;font-weight:bold;cursor:pointer}.btn-fill:active,.btn-sm:active,.btn-mini:active{opacity:.8}.btn-green{background:var(--primary-green)}.btn-outline{background:transparent;color:var(--text-light);border:1px solid var(--border-color);border-radius:8px;cursor:pointer}
+.btn-sm{flex:1;padding:8px;border-radius:20px;border:none;font-size:14px;font-weight:bold;cursor:pointer;color:#fff;background:var(--primary-yellow)}.btn-sm.ghost{background:transparent;color:var(--primary-green);border:1px solid var(--primary-green)}
+.btn-mini{padding:5px 12px;border-radius:16px;border:none;background:var(--primary-yellow);color:#fff;font-size:13px;font-weight:bold;cursor:pointer;white-space:nowrap}.btn-mini.green{background:var(--primary-green)}
+.btn-row{display:flex;gap:8px;margin-top:8px}.btn-row .btn-outline{flex:1;padding:8px 4px;font-size:13px}
+/* 總覽卡 */
+.hero-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}.hero-title{font-weight:bold;font-size:15px;margin-right:auto}
+#active-profile-select,#date-selector{border:1px solid var(--border-color);border-radius:6px;padding:4px 6px;background:var(--card-bg);color:var(--primary-green);font-weight:bold;font-size:13px;font-family:inherit;outline:none}#display-date-day{font-size:12px;color:var(--text-light)}
+.body-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;text-align:center;background:var(--bg-color);border-radius:12px;padding:8px 2px}.body-stats>div+div{border-left:1px solid var(--border-color)}
+.bs-val{font-size:21px;font-weight:bold;line-height:1.25}.bs-val.sm{font-size:15px;line-height:1.7}.bs-unit{font-size:11px;color:var(--text-light);font-weight:normal}
+.hero-actions{display:flex;gap:8px;margin:8px 0 12px}
+.section-label{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:bold;margin-bottom:6px}.mode-pill{font-size:11px;font-weight:normal;color:var(--primary-green);background:var(--bg-color);padding:2px 8px;border-radius:10px}
+.diet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.diet-item-modern{display:flex;flex-direction:column;align-items:center;padding:7px 2px 6px;border-radius:12px;font-weight:bold;transition:.3s}
+.d-title{font-size:12px}.d-val{font-size:26px;line-height:1.15}.d-label{font-size:11px;font-weight:normal;opacity:.9}.d-target{font-size:10px;font-weight:normal;color:var(--text-light);margin-top:2px;white-space:nowrap}
+.d-bar{width:80%;height:4px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;margin-top:4px}.d-bar i{display:block;height:100%;width:0;background:currentColor;border-radius:4px;transition:.3s}
+.status-remain{background:#fff8e1;color:#f5a623}.status-exceed{background:#ffebee;color:#e53935}.status-zero{background:var(--bg-color);color:#b0b0b0}
+/* 一般列 */
+.metric-row{display:flex;align-items:center;gap:8px;font-size:14px}.metric-row .m-title{font-weight:bold;white-space:nowrap}.metric-row .m-val{flex:1;text-align:right}
+.divider{border-top:1px solid var(--border-color);margin:10px 0}
+.mode-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}.mode-row span{font-size:13px;font-weight:bold;white-space:nowrap}.mode-row select{padding:6px 8px;font-size:14px}
+.advice-card{background:var(--advice-bg);border:1px solid var(--advice-bd)}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;justify-content:center;align-items:center;padding:14px}.modal-content{background:var(--card-bg);width:100%;max-width:420px;border-radius:16px;padding:16px;position:relative;animation:slideUp .3s ease-out;max-height:90vh;overflow-y:auto}@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}.modal-title{font-size:17px;font-weight:bold;margin-bottom:14px;text-align:center}.close-btn{position:absolute;right:16px;top:14px;background:none;border:none;font-size:20px;color:var(--text-light);cursor:pointer}.input-group{margin-bottom:10px}.input-group label{display:block;font-size:13px;color:var(--text-light);margin-bottom:4px}.input-control,.textarea-control{width:100%;padding:9px;border:1px solid var(--border-color);border-radius:8px;font-size:16px;outline:none;background:var(--card-bg);color:var(--text-dark)}.textarea-control{resize:vertical;min-height:100px;line-height:1.5}.modal-actions{display:flex;gap:10px;margin-top:14px}.modal-actions button{flex:1;padding:11px;border-radius:22px;font-size:15px;font-weight:bold;cursor:pointer;border:none}
+.water-list{max-height:250px;overflow-y:auto;margin-bottom:12px}.water-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}.water-row input{flex:1}.del-btn{background:#ffebee;color:#f44336;border:none;border-radius:8px;width:42px;height:42px;font-size:18px;display:flex;justify-content:center;align-items:center;cursor:pointer}
+.radio-group{display:flex;gap:15px;margin-bottom:10px}.radio-label{display:flex;align-items:center;gap:5px;font-size:15px;cursor:pointer}.sport-option{padding:10px 12px;border:1px solid var(--border-color);border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--card-bg)}
+.history-item{border-bottom:1px solid var(--border-color);padding:10px 0}.history-item:last-child{border-bottom:none}.history-date{font-weight:bold;color:var(--primary-yellow);margin-bottom:6px}.history-detail{font-size:14px;color:var(--text-light);line-height:1.8}.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.chip{padding:7px 11px;background:#e8f5e9;color:var(--primary-green);border:1px solid #c8e6c9;border-radius:16px;font-size:14px;cursor:pointer;font-weight:bold;display:flex;align-items:center;gap:6px}.delete-chip-btn{color:#f44336;font-size:16px;margin-left:4px;padding:0 4px;cursor:pointer;border-radius:50%;background:rgba(244,67,54,.1);line-height:1}.warning-text{font-size:12px;color:#f44336;margin-top:4px;font-weight:bold}.info-text{font-size:12px;color:var(--primary-green);line-height:1.6}
+.tab-header{display:flex;border-bottom:1px solid var(--border-color);margin-bottom:12px}.tab-btn{flex:1;padding:9px;text-align:center;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent}.tab-btn.active{color:var(--primary-yellow);border-bottom:2px solid var(--primary-yellow)}.tab-content{display:none;max-height:500px;overflow-y:auto;font-size:14px;padding-bottom:16px}.tab-content.active{display:block}.cheat-list{padding-left:0;margin-bottom:12px}.cheat-list li{margin-bottom:6px;border-bottom:1px dashed #eee;padding-bottom:6px;list-style:none;line-height:1.5}
+.progress-bg{height:8px;background:var(--border-color);border-radius:20px;overflow:hidden;margin:6px 0}.progress-bar{height:100%;background:var(--primary-green);border-radius:20px;transition:.3s}.target-setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px}.target-setting-row label{flex:1;font-size:14px}.target-setting-row input{width:120px;text-align:center}.small-note{font-size:12px;color:var(--text-light);line-height:1.6}.add-custom-chip-btn{width:100%;padding:8px;border:1px dashed var(--primary-green);color:var(--primary-green);background:transparent;border-radius:8px;cursor:pointer;font-size:14px;margin-bottom:12px}.auto-calc-box{background:var(--diet-bg);padding:10px 12px;border-radius:12px;margin-bottom:12px;border:1px solid var(--primary-yellow)}
+.trend-card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid var(--border-color)}.trend-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:bold}.trend-progress-bg{height:8px;background:var(--border-color);border-radius:10px;overflow:hidden}.trend-progress-fill{height:100%;background:#2ecc71;border-radius:10px;transition:.5s}.trend-stats{display:flex;text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color)}.trend-stat-item{flex:1;border-right:1px solid var(--border-color)}.trend-stat-item:last-child{border-right:none}.trend-stat-label{font-size:12px;color:var(--text-light)}.trend-stat-value{font-size:16px;font-weight:bold;margin-top:5px}.chart-tabs{display:flex;justify-content:space-around;margin-top:8px;margin-bottom:12px}.chart-tab{text-align:center;cursor:pointer;padding-bottom:8px;flex:1;border-bottom:3px solid transparent}.chart-tab.active-weight{border-bottom:3px solid #2ecc71}.chart-tab.active-fat{border-bottom:3px solid #3498db}.chart-val{font-size:22px;font-weight:bold;color:var(--text-dark);margin-top:2px}
+.risk-card{border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px;line-height:1.6}.travel-badge{display:inline-block;padding:2px 7px;border-radius:12px;background:#e8f5e9;color:var(--primary-green);font-size:11px;font-weight:bold;vertical-align:middle}
 </style>
 </head>
 <body>
 <div class="app-container">
-<div class="profile-header">
-<div class="avatar">👦</div><div class="profile-info">
-<div class="profile-name">資訊總覽 <span class="travel-badge">v1.5.4</span></div>
-<div class="profile-date"><select id="active-profile-select" onchange="switchProfile(this.value)" style="border:1px solid var(--border-color);border-radius:6px;padding:4px;background:var(--card-bg);color:var(--primary-green);font-weight:bold"><option value="M">👨 男生版</option><option value="F">👩 女生版</option></select><input type="date" id="date-selector" onchange="changeDate(this.value)"><span id="display-date-day"></span></div>
-<div class="target-stats">
-<div class="stat-item"><div class="stat-label">目標體重</div><div class="stat-val" id="header-target-weight">73 kg</div></div>
-<div class="stat-item"><div class="stat-label">當日體重</div><div class="stat-val" id="summary-weight">--</div></div>
-<div class="stat-item"><div class="stat-label">剩餘體重</div><div class="stat-val" id="summary-remain">--</div></div>
-</div></div></div>
 
+<!-- 總覽：體重體脂 + 剩餘份量 -->
 <div class="card">
-<div class="card-header">當日體重體脂 <span class="view-record" onclick="openWeightHistory()">📈 趨勢圖表 ></span></div>
-<div class="card-content-row">
-<div><div class="stat-label">體重</div><div class="val-display"><span id="main-weight">--</span> <span class="val-unit">kg</span></div></div>
-<div><div class="stat-label">體脂</div><div class="val-display"><span id="main-fat">--</span> <span class="val-unit">%</span></div></div>
+<div class="hero-top">
+<span class="hero-title">📋 每日健康 <span class="travel-badge">v1.5.5</span></span>
+<select id="active-profile-select" onchange="switchProfile(this.value)"><option value="M">👨 男生版</option><option value="F">👩 女生版</option></select>
+<input type="date" id="date-selector" onchange="changeDate(this.value)"><span id="display-date-day"></span>
 </div>
-<button class="btn-fill" onclick="openModal('weightModal')">填寫記錄</button>
+<div class="body-stats">
+<div><div class="stat-label">體重</div><div class="bs-val"><span id="main-weight">--</span><span class="bs-unit"> kg</span></div></div>
+<div><div class="stat-label">體脂</div><div class="bs-val"><span id="main-fat">--</span><span class="bs-unit"> %</span></div></div>
+<div><div class="stat-label">目標體重</div><div class="bs-val sm" id="header-target-weight">73 kg</div></div>
+<div><div class="stat-label">距目標</div><div class="bs-val sm" id="summary-remain">--</div></div>
+</div>
+<span id="summary-weight" style="display:none">--</span>
+<div class="hero-actions"><button class="btn-sm" onclick="openModal('weightModal')">✏️ 記錄體重體脂</button><button class="btn-sm ghost" onclick="openWeightHistory()">📈 趨勢圖表</button></div>
+
+<div class="section-label"><span>🍽️ 今日剩餘份量</span><span class="mode-pill" id="hero-mode-label"></span></div>
+<div class="diet-grid">
+<div class="diet-item-modern" id="box-carbs"><span class="d-title">主食</span><span class="d-val" id="val-carbs">--</span><span class="d-label" id="lbl-carbs">剩餘</span><span class="d-target" id="tgt-carbs"></span><div class="d-bar"><i id="bar-carbs"></i></div></div>
+<div class="diet-item-modern" id="box-meat"><span class="d-title">肉類</span><span class="d-val" id="val-meat">--</span><span class="d-label" id="lbl-meat">剩餘</span><span class="d-target" id="tgt-meat"></span><div class="d-bar"><i id="bar-meat"></i></div></div>
+<div class="diet-item-modern" id="box-fruit"><span class="d-title">水果</span><span class="d-val" id="val-fruit">--</span><span class="d-label" id="lbl-fruit">剩餘</span><span class="d-target" id="tgt-fruit"></span><div class="d-bar"><i id="bar-fruit"></i></div></div>
+<div class="diet-item-modern" id="box-veg"><span class="d-title">蔬菜</span><span class="d-val" id="val-veg">--</span><span class="d-label" id="lbl-veg">剩餘</span><span class="d-target" id="tgt-veg"></span><div class="d-bar"><i id="bar-veg"></i></div></div>
+</div>
+<div id="alert-fruit" class="warning-text" style="display:none;text-align:center">⚠️ 水果請於 17:30 前食用完畢</div>
+<div id="alert-veg" class="warning-text" style="display:none;text-align:center">⚠️ 晚上 8 點後禁吃蔬菜</div>
+<button class="btn-fill" style="margin-top:8px" onclick="openDietModal()">🍽️ 填寫飲食紀錄</button>
 </div>
 
-<div class="card">
-<div class="card-header">當日身體代謝 <span class="view-record" onclick="openWaterHistory()">水分歷史 ></span></div>
-<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:bold"><span>水分攝取</span><span><span id="main-water" style="color:var(--primary-yellow)">0 ml</span> <span style="color:var(--text-light);font-weight:normal">/ <span id="water-target-display">2400</span> ml</span></span></div>
-<div class="progress-bg"><div class="progress-bar" id="water-progress"></div></div><div id="water-status" style="font-size:13px;font-weight:bold;margin:8px 0"></div>
-<div id="alert-water" class="warning-text" style="display:none;margin-bottom:10px">⚠️ 已過晚上 9 點，口渴最多再喝 200-300 ml！</div>
-<div id="sport-water-advice" class="info-text" style="display:none;margin-bottom:10px">💡 有運動紀錄：水量仍以7日平均體重的建議區間為準，依口渴與流汗狀況適度補水；不自動提高上限。</div>
-<button class="btn-fill" onclick="openWaterModal()" style="margin-bottom:25px">填寫記錄</button>
-<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-weight:bold"><span>排便狀況</span><span id="main-poop" style="font-weight:normal">尚未填寫</span></div>
-<button class="btn-fill" onclick="openPoopModal()">填寫記錄</button>
-</div>
-
+<!-- 飲食細節 -->
 <div class="card">
 <div class="card-header">當日飲食記錄 <span class="view-record" onclick="openDietHistory()">飲食記錄管理 ></span></div>
-<button class="btn-fill" style="margin-bottom:15px" onclick="openDietModal()">🍽️ 填寫飲食紀錄</button>
-<div style="font-size:12px;color:var(--text-light);margin-bottom:10px">v1：目標會依一般日／出國活動量模式切換。</div>
-
-<div style="background:var(--diet-bg);border:1px solid var(--border-color);border-radius:12px;padding:12px;margin-bottom:15px">
-<div style="font-weight:bold;font-size:14px;margin-bottom:8px">✈️ 今日飲控模式</div>
-<select id="travel-mode-select" class="input-control" onchange="changeTravelMode(this.value)" style="padding:9px">
+<div class="mode-row"><span>✈️ 飲控模式</span>
+<select id="travel-mode-select" class="input-control" onchange="changeTravelMode(this.value)">
 <option value="normal">🏠 一般日</option>
 <option value="indoor">🏨 出國｜整天室內：12主 / 8肉 / 2果</option>
 <option value="halfOutdoor">🚶 出國｜半戶外半室內：13主 / 9肉 / 2果</option>
 <option value="walking">🚶‍♂️ 出國｜整天走路：14主 / 10肉 / 2果</option>
-</select>
-<div id="travel-mode-note" class="small-note" style="margin-top:8px"></div>
+</select></div>
+<div id="travel-mode-note" class="small-note" style="margin-bottom:6px"></div>
+<div id="diet-risk-panel" style="display:none;margin-bottom:8px"></div>
+<div id="weight-average-note" class="small-note" style="margin-bottom:8px"></div>
+<div id="diet-entry-list"></div>
+<div class="btn-row"><button class="btn-outline" onclick="openModal('cheatSheetModal')">🔍 食物對照表</button><button class="btn-outline" style="color:#f44336;border-color:#ffcdd2" onclick="deductMissedMorning()">⚠️ 10:30前未進食補記</button></div>
 </div>
 
-<div id="diet-risk-panel" style="display:none;margin-bottom:15px"></div><div id="weight-average-note" class="small-note" style="margin-bottom:12px"></div>
-
-<div class="diet-grid">
-<div class="diet-item-modern" id="box-carbs"><span class="d-title">主食</span><span class="d-label" id="lbl-carbs">剩餘</span><span class="d-val" id="val-carbs">--</span></div>
-<div class="diet-item-modern" id="box-meat"><span class="d-title">肉類</span><span class="d-label" id="lbl-meat">剩餘</span><span class="d-val" id="val-meat">--</span></div>
-<div class="diet-item-modern" id="box-fruit"><span class="d-title">水果</span><span class="d-label" id="lbl-fruit">剩餘</span><span class="d-val" id="val-fruit">--</span></div>
-<div class="diet-item-modern" id="box-veg"><span class="d-title">蔬菜</span><span class="d-label" id="lbl-veg">剩餘</span><span class="d-val" id="val-veg">--</span></div>
-</div>
-<div id="alert-fruit" class="warning-text" style="display:none;text-align:center;margin-bottom:5px">⚠️ 水果請於 17:30 前食用完畢</div>
-<div id="alert-veg" class="warning-text" style="display:none;text-align:center;margin-bottom:10px">⚠️ 晚上 8 點後禁吃蔬菜</div>
-<div id="diet-entry-list" style="margin-bottom:10px"></div>
-
-<button class="btn-outline" style="width:100%;margin-top:10px;padding:10px" onclick="openModal('cheatSheetModal')">🔍 查看營養師食物對照表</button>
-<button class="btn-outline" style="width:100%;margin-top:10px;padding:10px;color:#f44336;border-color:#ffcdd2" onclick="deductMissedMorning()">⚠️ 10:30前未進食 → 補記4主1肉</button>
+<!-- 水分／排便 -->
+<div class="card">
+<div class="card-header">當日身體代謝 <span class="view-record" onclick="openWaterHistory()">水分歷史 ></span></div>
+<div class="metric-row"><span class="m-title">💧 水分</span><span class="m-val"><b id="main-water" style="color:var(--primary-yellow)">0 ml</b> <span style="color:var(--text-light);font-size:12px">/ <span id="water-target-display">2400</span> ml</span></span><button class="btn-mini" onclick="openWaterModal()">+ 記錄</button></div>
+<div class="progress-bg"><div class="progress-bar" id="water-progress"></div></div>
+<div id="water-status" style="font-size:12px;font-weight:bold"></div>
+<div id="alert-water" class="warning-text" style="display:none">⚠️ 已過晚上 9 點，口渴最多再喝 200-300 ml！</div>
+<div id="sport-water-advice" class="info-text" style="display:none;margin-top:4px">💡 有運動紀錄：水量仍以7日平均體重的建議區間為準，依口渴與流汗狀況適度補水；不自動提高上限。</div>
+<div class="divider"></div>
+<div class="metric-row"><span class="m-title">💩 排便</span><span class="m-val" id="main-poop">尚未填寫</span><button class="btn-mini" onclick="openPoopModal()">+ 記錄</button></div>
 </div>
 
+<!-- 運動 -->
 <div class="card">
 <div class="card-header">運動紀錄 <span class="view-record" onclick="openSportHistory()">運動歷史 ></span></div>
-<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-weight:bold"><span>當日活動時間</span><span><span id="main-sport-hours" style="color:var(--primary-green)">0</span> 小時</span></div>
-<div id="sport-list-display" style="margin-bottom:15px;font-size:14px;color:var(--text-light)">目前沒有運動記錄，點下方新增！</div>
-<div id="sport-diet-advice" style="display:none;background:var(--diet-bg);border:1px solid var(--border-color);border-radius:10px;padding:12px;margin-bottom:15px;font-size:13px;line-height:1.8"><b>🏃 運動後營養補充</b><div>運動增加主食：<b id="sport-extra-carbs">0</b> 份</div><div>運動增加肉類：<b id="sport-extra-meat">0</b> 份</div><div style="color:var(--primary-green);margin-top:5px">💡 一般日才自動增加；出國模式直接使用營養師活動量級距。</div></div>
-<button class="btn-fill btn-green" onclick="openSportModal()">+ 新增運動</button>
+<div class="metric-row" style="margin-bottom:8px"><span class="m-title">🏃 當日活動</span><span class="m-val"><b id="main-sport-hours" style="color:var(--primary-green)">0</b> 小時</span><button class="btn-mini green" onclick="openSportModal()">+ 新增</button></div>
+<div id="sport-list-display" style="font-size:13px;color:var(--text-light)">目前沒有運動記錄，點右上新增！</div>
+<div id="sport-diet-advice" style="display:none;background:var(--diet-bg);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;line-height:1.7"><b>🏃 運動後營養補充</b><div>運動增加主食：<b id="sport-extra-carbs">0</b> 份｜肉類：<b id="sport-extra-meat">0</b> 份</div><div style="color:var(--primary-green);margin-top:4px">💡 一般日才自動增加；出國模式直接使用營養師活動量級距。</div></div>
 </div>
 
-<div class="card" style="border:1px solid #c8e6c9;background:#f1f8e9">
-<div class="card-header" style="border-bottom:1px solid #c8e6c9;color:var(--primary-green)">👩‍⚕️ 營養師建議 <span class="view-record" onclick="openAdviceHistory()">🔍 查看紀錄 ></span></div>
-<div id="display-advice" style="font-size:14px;color:var(--text-dark);line-height:1.6;margin-bottom:15px;white-space:pre-wrap;word-wrap:break-word">目前沒有建議，點擊下方新增！</div>
-<button class="btn-outline" style="width:100%;padding:10px;background:white;border-color:#c8e6c9" onclick="openModal('adviceModal')">✍️ 編輯建議</button>
+<!-- 營養師建議 -->
+<div class="card advice-card">
+<div class="card-header" style="color:var(--primary-green)">👩‍⚕️ 營養師建議 <span><span class="view-record" onclick="openAdviceHistory()">🔍 紀錄</span>　<span class="view-record" onclick="openModal('adviceModal')">✍️ 編輯</span></span></div>
+<div id="display-advice" style="font-size:14px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word">目前沒有建議，點擊下方新增！</div>
 </div>
 
+<!-- 設定 -->
 <div class="card">
 <div class="card-header">系統設定與備份</div>
-<div class="small-note">v1：設定每日一般日目標；出國模式使用營養師指定活動量級距。</div>
-<button class="setting-button" onclick="openSettings()">⚙️ 修改每日目標</button>
-<div style="margin-top:15px;border-top:1px solid var(--border-color);padding-top:15px">
-<div class="small-note" style="margin-bottom:10px;color:#d68910">⚠️ 資料皆儲存於本機，建議定期匯出備份。</div>
-<div style="display:flex;gap:10px"><button class="btn-outline" style="flex:1;padding:10px;border-radius:8px" onclick="exportData()">💾 匯出備份</button><button class="btn-outline" style="flex:1;padding:10px;border-radius:8px;position:relative" onclick="document.getElementById('import-file').click()">📂 匯入還原<input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)"></button></div>
-</div></div>
+<div class="btn-row" style="margin-top:0"><button class="btn-outline" onclick="openSettings()">⚙️ 每日目標</button><button class="btn-outline" onclick="exportData()">💾 匯出</button><button class="btn-outline" onclick="document.getElementById('import-file').click()">📂 匯入<input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)"></button></div>
+<div class="small-note" style="margin-top:8px;color:#d68910">⚠️ 資料皆儲存於本機，建議定期匯出備份。出國模式使用營養師指定活動量級距。</div>
+</div>
 </div>
 
 <!-- Modals -->
@@ -151,12 +164,12 @@ body{background:var(--bg-color);color:var(--text-dark);display:flex;justify-cont
 
 <p style="font-size:12px;color:var(--text-light);margin-bottom:10px">快捷食物：</p><div class="chip-group" id="dynamic-chip-group"></div><button class="add-custom-chip-btn" onclick="openAddChipModal()">➕ 新增自訂食物按鈕</button>
 <div style="border-top:1px dashed var(--border-color);margin:15px 0"></div><p style="font-size:12px;color:var(--text-light);margin-bottom:15px;text-align:center">本次扣除總計 (加入至選定餐別)</p>
-<div class="input-group"><label>吃掉的主食 (份)</label><input type="number" id="eat-carbs" class="input-control" value="0" min="0" step="0.1"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px"><div class="input-group"><label>吃掉的主食 (份)</label><input type="number" id="eat-carbs" class="input-control" value="0" min="0" step="0.1"></div>
 <div class="input-group"><label>吃掉的肉類 (份)</label><input type="number" id="eat-meat" class="input-control" value="0" min="0" step="0.1"></div>
 <div class="input-group"><label>吃掉的水果 (份)</label><input type="number" id="eat-fruit" class="input-control" value="0" min="0" step="0.5"></div>
 <div class="input-group"><label>吃掉的蔬菜 (份)</label><input type="number" id="eat-veg" class="input-control" value="0" min="0" step="0.5"></div>
-<div class="input-group"><label>🧈 本次是否為炸物？</label><label class="radio-label"><input type="checkbox" id="eat-fried"> 是，計入炸物額度</label></div>
-<div class="input-group"><label>🍳 烹調方式</label><select id="cooking-method" class="input-control"><option value="">未指定</option><option>煎炒</option><option>烤</option><option>燉</option><option>煮湯</option><option>炸</option><option>其他</option></select></div>
+</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px"><div class="input-group"><label>🧈 本次是否為炸物？</label><label class="radio-label"><input type="checkbox" id="eat-fried"> 是，計入炸物額度</label></div>
+<div class="input-group"><label>🍳 烹調方式</label><select id="cooking-method" class="input-control"><option value="">未指定</option><option>煎炒</option><option>烤</option><option>燉</option><option>煮湯</option><option>炸</option><option>其他</option></select></div></div>
 <div class="modal-actions"><button class="btn-outline" onclick="resetDietTarget()">重置當日飲食</button><button class="btn-green btn-fill" onclick="saveDiet()">確認新增</button></div>
 </div></div>
 
@@ -302,14 +315,16 @@ function changeTravelMode(v){dailyData.travelMode=v;saveData()}
 function updateUI(){
 checkTimeAlerts();
 if(document.getElementById('active-profile-select'))document.getElementById('active-profile-select').value=activeProfile;
-document.getElementById('display-advice').innerText=dailyData.advice||'目前沒有建議，點擊下方新增！';
+document.getElementById('display-advice').innerText=dailyData.advice||'目前沒有建議，點右上「編輯」新增！';
 document.getElementById('main-weight').innerText=dailyData.weight||'--';document.getElementById('main-fat').innerText=dailyData.fat||'--';
 document.getElementById('summary-weight').innerText=dailyData.weight?`${dailyData.weight} kg`:'--';document.getElementById('summary-remain').innerText=dailyData.weight?`${(parseFloat(dailyData.weight)-targets.targetWeight).toFixed(1)} kg`:'--';document.getElementById('header-target-weight').innerText=`${targets.targetWeight} kg`;
 const wi=calculateWater(),tw=dailyData.waterEntries.reduce((a,b)=>a+Number(b||0),0);document.getElementById('water-target-display').innerText=`${wi.minWaterTarget}–${wi.maxWaterTarget}`;document.getElementById('main-water').innerText=`${tw} ml`;document.getElementById('water-progress').style.width=`${Math.min(100,tw/wi.maxWaterTarget*100)}%`;const ws=document.getElementById('water-status');if(tw<wi.minWaterTarget){ws.style.color='var(--primary-yellow)';ws.innerText=`💧 建議區間 ${wi.minWaterTarget}–${wi.maxWaterTarget} ml；距下限還差 ${wi.minWaterTarget-tw} ml`}else if(tw<=wi.maxWaterTarget){ws.style.color='var(--primary-green)';ws.innerText=`✅ 已在建議區間內（${wi.minWaterTarget}–${wi.maxWaterTarget} ml）`}else{ws.style.color='#d84315';ws.innerText=`⚠️ 已超過建議上限 ${tw-wi.maxWaterTarget} ml（上限 ${wi.maxWaterTarget} ml）`}
 document.getElementById('sport-water-advice').style.display=wi.totalHours>0?'block':'none';
-document.getElementById('main-sport-hours').innerText=wi.totalHours;document.getElementById('sport-list-display').innerHTML=dailyData.sports.length?dailyData.sports.map((s,i)=>`<div style="display:flex;justify-content:space-between;background:var(--bg-color);padding:8px 12px;border-radius:8px;margin-bottom:5px"><span>🏃 ${escapeHTML(s.name)} (${Number(s.hours)}h) ${s.sweat?'💦':''}</span><button onclick="removeSport(${i})" style="background:none;border:none;color:red;cursor:pointer">🗑</button></div>`).join(''):'目前沒有記錄！';
+document.getElementById('main-sport-hours').innerText=wi.totalHours;document.getElementById('sport-list-display').innerHTML=dailyData.sports.length?dailyData.sports.map((s,i)=>`<div style="display:flex;justify-content:space-between;background:var(--bg-color);padding:6px 10px;border-radius:8px;margin-bottom:4px"><span>🏃 ${escapeHTML(s.name)} (${Number(s.hours)}h) ${s.sweat?'💦':''}</span><button onclick="removeSport(${i})" style="background:none;border:none;color:red;cursor:pointer">🗑</button></div>`).join(''):'目前沒有記錄！';
 const diet=calculateDiet();const avgNote=document.getElementById('weight-average-note');if(avgNote)avgNote.innerText=`📊 ${activeProfile==='M'?'男生':'女生'}版｜最近7日平均體重 ${diet.weightAverage.toFixed(2)} kg｜${diet.targetReason||'出國模式使用活動量目標'}`;document.getElementById('sport-extra-carbs').innerText=diet.boostCarbs;document.getElementById('sport-extra-meat').innerText=diet.boostMeat;document.getElementById('sport-diet-advice').style.display=diet.totalHours>0?'block':'none';const sportAdvice=document.querySelector('#sport-diet-advice div:last-child');if(sportAdvice)sportAdvice.innerText=`💡 僅勾選「重訓飲食加成」的運動會增加份數；每小時 +1主 +2肉。7日平均體重：${diet.weightAverage.toFixed(2)} kg。${diet.targetReason||''}`;
 ['carbs','meat','fruit','veg'].forEach(k=>updateDietBox(k,diet[`remain${k[0].toUpperCase()+k.slice(1)}`]));
+const tg={carbs:diet.targetCarbs,meat:diet.targetMeat,fruit:diet.targetFruit,veg:Number(targets.veg)};['carbs','meat','fruit','veg'].forEach(k=>{const used=Number(dailyData.dietConsumed[k])||0,t=Number(tg[k])||0,el=document.getElementById(`tgt-${k}`),b=document.getElementById(`bar-${k}`);if(el)el.innerText=`${formatNumber(r2(used))} / ${formatNumber(r2(t))}`;if(b)b.style.width=`${t>0?Math.min(100,used/t*100):0}%`});
+const ml=document.getElementById('hero-mode-label');if(ml)ml.innerText={normal:'🏠 一般日',indoor:'🏨 出國・室內',halfOutdoor:'🚶 出國・半戶外',walking:'🚶‍♂️ 出國・整天走路'}[dailyData.travelMode]||'';
 document.getElementById('main-poop').innerText=dailyData.poop.count>0?`${dailyData.poop.count}次 (${dailyData.poop.status})`:'尚未填寫';
 updateTravelModeUI();renderDietRisk();renderDietEntries()
 }
@@ -359,7 +374,7 @@ function quickAddDiet(c,m,f,v){document.getElementById('eat-carbs').value=Number
 function newEntryId(){return Date.now()*1000+Math.floor(Math.random()*1000)}
 function applyDietDelta(meal,c,m,f,v,sign){if(!dailyData.meals)dailyData.meals=emptyMeals();const q=dailyData.meals[meal];q.c=r2(q.c+sign*c);q.m=r2(q.m+sign*m);q.f=r2(q.f+sign*f);q.v=r2(q.v+sign*v);const d=dailyData.dietConsumed;d.carbs=r2(d.carbs+sign*c);d.meat=r2(d.meat+sign*m);d.fruit=r2(d.fruit+sign*f);d.veg=r2(d.veg+sign*v);if(meal==='morning')dailyData.breakfastMeat=r2(Math.max(0,Number(dailyData.breakfastMeat||0)+sign*m))}
 function deleteDietEntry(id){const list=dailyData.dietEntries||[],i=list.findIndex(e=>e.id===id);if(i<0)return;const e=list[i];if(!confirm('確定刪除這筆飲食紀錄？'))return;applyDietDelta(e.meal,e.c,e.m,e.f,e.v,-1);if(e.fried){dailyData.friedMeat=r2(Math.max(0,Number(dailyData.friedMeat||0)-e.m));dailyData.friedUsed=dailyData.friedMeat>0}if(e.method){const k=dailyData.cookingMethods.indexOf(e.method);if(k>=0)dailyData.cookingMethods.splice(k,1)}list.splice(i,1);const last=list[list.length-1];dailyData.lastMealTime=last?last.time:null;dailyData.lastMealType=last?last.meal:null;saveData()}
-function renderDietEntries(){const box=document.getElementById('diet-entry-list');if(!box)return;const list=dailyData.dietEntries||[];if(!list.length){box.innerHTML='';return}const names={morning:'早餐',noon:'午餐',night:'晚餐',snack:'點心'};box.innerHTML='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">📝 今日已記錄（可單筆刪除）</div>'+list.map(e=>{const t=new Date(e.time),hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;const parts=[['主',e.c],['肉',e.m],['果',e.f],['菜',e.v]].filter(p=>Number(p[1])).map(p=>`${formatNumber(p[1])}${p[0]}`).join(' ');return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-color);padding:8px 12px;border-radius:8px;margin-bottom:5px;font-size:13px"><span>${hm} ${names[e.meal]||''}｜${parts||'0'}${e.fried?' 🍟':''}${e.label?' （'+escapeHTML(e.label)+'）':''}</span><button onclick="deleteDietEntry(${e.id})" style="background:none;border:none;color:red;cursor:pointer;font-size:16px">🗑</button></div>`}).join('')}
+function renderDietEntries(){const box=document.getElementById('diet-entry-list');if(!box)return;const list=dailyData.dietEntries||[];if(!list.length){box.innerHTML='';return}const names={morning:'早餐',noon:'午餐',night:'晚餐',snack:'點心'};box.innerHTML='<div style="font-size:13px;font-weight:bold;margin-bottom:6px">📝 今日已記錄（可單筆刪除）</div>'+list.map(e=>{const t=new Date(e.time),hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;const parts=[['主',e.c],['肉',e.m],['果',e.f],['菜',e.v]].filter(p=>Number(p[1])).map(p=>`${formatNumber(p[1])}${p[0]}`).join(' ');return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-color);padding:6px 10px;border-radius:8px;margin-bottom:4px;font-size:13px"><span>${hm} ${names[e.meal]||''}｜${parts||'0'}${e.fried?' 🍟':''}${e.label?' （'+escapeHTML(e.label)+'）':''}</span><button onclick="deleteDietEntry(${e.id})" style="background:none;border:none;color:red;cursor:pointer;font-size:16px">🗑</button></div>`}).join('')}
 function saveDiet(){
 const meal=document.querySelector('input[name="meal-type"]:checked').value;if(!dailyData.meals)dailyData.meals=emptyMeals();
 const c=Number(document.getElementById('eat-carbs').value)||0,m=Number(document.getElementById('eat-meat').value)||0,f=Number(document.getElementById('eat-fruit').value)||0,v=Number(document.getElementById('eat-veg').value)||0;
@@ -440,7 +455,7 @@ function openSportHistory(){showHistory('🏃 運動歷史',getAllHistory().filt
 function switchTab(id,el){document.querySelectorAll('.tab-content,.tab-btn').forEach(n=>n.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active')}
 
 /* Backup */
-function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.4_${formatDate(new Date())}.json`;a.click()}
+function exportData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('health_'))d[k]=localStorage.getItem(k)}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`健康紀錄備份_v1.5.5_${formatDate(new Date())}.json`;a.click()}
 function importData(e){const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);let c=0;for(const k in d)if(k.startsWith('health_')){localStorage.setItem(k,d[k]);c++}alert(`✅ 成功還原 ${c} 筆資料！`);location.reload()}catch(err){alert('❌ 檔案格式錯誤！')}};if(e.target.files[0])r.readAsText(e.target.files[0]);e.target.value=''}
 
 // v1.5.4: iOS Safari / 主畫面 PWA 返回前景與跨午夜同步
